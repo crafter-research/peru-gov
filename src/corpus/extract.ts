@@ -1,3 +1,4 @@
+import { USER_AGENT } from "@/corpus/sitemap";
 import {
   type Ficha,
   type FichaLink,
@@ -204,4 +205,20 @@ export async function extractFicha(
     lastChanged: parseLastChanged(lastChanged),
     extractedAt,
   });
+}
+
+/** Fetches one gob.pe page (following slug redirects) and extracts it. */
+export async function fetchFicha(
+  urlOrPath: string,
+): Promise<{ ficha: Ficha; html: string }> {
+  const url = urlOrPath.startsWith("http")
+    ? urlOrPath
+    : `https://www.gob.pe/${urlOrPath}`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": USER_AGENT },
+    redirect: "follow",
+  });
+  if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
+  const html = await res.text();
+  return { ficha: await extractFicha(html, res.url), html };
 }

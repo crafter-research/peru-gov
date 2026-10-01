@@ -1,8 +1,7 @@
 // bun scripts/crawl.ts [--limit N] [--ids 224,174] — N16 + N17: fetch changed pages, extract fichas
 import { mkdir } from "node:fs/promises";
-import { extractFicha } from "@/corpus/extract";
+import { fetchFicha } from "@/corpus/extract";
 import { type CorpusIndex, needsFetch } from "@/corpus/index-store";
-import { USER_AGENT } from "@/corpus/sitemap";
 
 const DELAY_MS = 5000;
 const INDEX = "data/index.json";
@@ -25,13 +24,7 @@ console.error(
 let ok = 0;
 for (const entry of queue) {
   try {
-    const res = await fetch(entry.url, {
-      headers: { "User-Agent": USER_AGENT },
-      redirect: "follow",
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const html = await res.text();
-    const ficha = await extractFicha(html, res.url);
+    const { ficha, html } = await fetchFicha(entry.url);
     await Bun.write(`data/raw/${ficha.slug}.html`, html);
     await Bun.write(
       `data/fichas/${ficha.id}.json`,
