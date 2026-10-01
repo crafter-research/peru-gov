@@ -4,6 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { FichaCard } from "@/components/ficha-card";
+import { VoiceButton } from "@/components/voice-button";
 import type { PeruMessage } from "@/lib/messages";
 
 const EXAMPLES = [
@@ -49,6 +50,9 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
         placeholder="Cuéntame qué necesitas, por ejemplo “perdí mi DNI”"
         aria-label="Describe lo que necesitas"
         className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted"
+      />
+      <VoiceButton
+        onText={(t) => setInput((prev) => (prev ? `${prev} ${t}` : t))}
       />
       <button
         type="submit"
