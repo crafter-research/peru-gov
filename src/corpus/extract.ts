@@ -50,12 +50,33 @@ const decode = (s: string) =>
 const clean = (s: string) => decode(s).replace(/\s+/g, " ").trim();
 
 /** "<Title> - <Kind> - <Entity> - Plataforma del Estado Peruano" */
+const PAGE_KINDS = new Set([
+  "Trámite",
+  "Orientación",
+  "Servicio",
+  "Campaña",
+  "Informes y publicaciones",
+  "Normas y documentos legales",
+  "Noticias",
+]);
+
+/** "<Title> - <Kind> - <Entity> - Plataforma del Estado Peruano"; titles and entities may themselves contain " - ". */
 export function parseDocumentTitle(raw: string) {
   const parts = clean(raw).split(" - ");
   if (parts.at(-1) === "Plataforma del Estado Peruano") parts.pop();
-  const entity = parts.pop() ?? "";
-  const kind = parts.pop() ?? "";
-  return { kind, entity, heading: parts.join(" - ") };
+  let k = -1;
+  for (let i = parts.length - 2; i >= 0; i--) {
+    if (PAGE_KINDS.has(parts[i])) {
+      k = i;
+      break;
+    }
+  }
+  if (k < 0) k = Math.max(0, parts.length - 2);
+  return {
+    kind: parts[k] ?? "",
+    entity: parts.slice(k + 1).join(" - "),
+    heading: parts.slice(0, k).join(" - "),
+  };
 }
 
 /** Variant pages repeat the guide's h1; their own name follows it in the document title. */
