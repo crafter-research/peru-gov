@@ -24,7 +24,7 @@ export function buildTree(slugs: string[]): Tree {
       const p = byBase.get(base);
       if (p !== undefined && p !== id) {
         tree.parent[id] = p;
-        (tree.children[p] ??= []).push(id);
+        tree.children[p] = [...(tree.children[p] ?? []), id];
         break;
       }
     }
