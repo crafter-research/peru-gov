@@ -34,10 +34,11 @@ export async function loadOrFetchFicha(
     () => undefined,
   );
   if (!ficha) return undefined;
+  // Local dev persists the cache; serverless filesystems are read-only, so memory is the cache there.
   await writeFile(
     path.join(DIR, `${ficha.id}.json`),
     `${JSON.stringify(ficha, null, 2)}\n`,
-  );
+  ).catch(() => undefined);
   (await allFichas()).set(ficha.id, ficha).set(id, ficha);
   return ficha;
 }
