@@ -192,6 +192,16 @@ function AssistantMessage({
                 </div>
               </div>
             );
+          case "data-limited":
+            return (
+              <p
+                key={key}
+                className="rounded-2xl border border-border bg-surface p-4 text-sm"
+              >
+                Hiciste muchas preguntas seguidas. Intenta de nuevo en{" "}
+                {Math.ceil(part.data.retryAfterSeconds / 60)} min.
+              </p>
+            );
           case "data-none":
             return (
               <div

@@ -8,12 +8,15 @@ import {
 } from "ai";
 import { allFichas, loadOrFetchFicha } from "@/lib/fichas";
 import type { ChatBody, PeruMessage } from "@/lib/messages";
+import { createLimiter } from "@/lib/rate-limit";
 import { retrieve } from "@/lib/retrieve";
 import { rewrite } from "@/lib/rewrite";
 import { type Candidate, jevPick, route } from "@/lib/router";
 import { pathFor, variantsAndRelated } from "@/lib/tree";
 
 export const maxDuration = 30;
+
+const limiter = createLimiter(20, 10 * 60_000);
 
 const ANSWER_INSTRUCTIONS =
   "Eres un asistente no oficial que explica trámites del Estado peruano. Responde en 2 o 3 oraciones, en español claro, usando SOLO la ficha oficial dada. No menciones requisitos, costos ni plazos que no estén en la ficha. No inventes. Los detalles se muestran aparte; no los repitas en lista.";
@@ -46,10 +49,20 @@ export async function POST(req: Request) {
   const { messages, hint }: { messages: PeruMessage[] } & ChatBody =
     await req.json();
   const question = lastUserText(messages).slice(0, 500);
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "local";
+  const allowed = limiter(ip);
 
   const stream = createUIMessageStream<PeruMessage>({
     execute: async ({ writer }) => {
       writer.write({ type: "start" });
+      if (!allowed.ok) {
+        writer.write({
+          type: "data-limited",
+          data: { retryAfterSeconds: allowed.retryAfterSeconds },
+        });
+        return;
+      }
       const result = await route(
         question,
         { rewrite, candidates, pick: jevPick },
