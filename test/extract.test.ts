@@ -89,9 +89,15 @@ test("parseDocumentTitle keeps entities that contain dashes", () => {
     parseDocumentTitle(
       "Inscripción ordinaria de actas de nacimiento - Trámite - Municipalidad Distrital de San Jerónimo - Cusco - Plataforma del Estado Peruano",
     ),
-  ).toEqual({ kind: "Trámite", entity: "Municipalidad Distrital de San Jerónimo - Cusco", heading: "Inscripción ordinaria de actas de nacimiento" });
+  ).toEqual({
+    kind: "Trámite",
+    entity: "Municipalidad Distrital de San Jerónimo - Cusco",
+    heading: "Inscripción ordinaria de actas de nacimiento",
+  });
   expect(
-    parseDocumentTitle("Duplicado de licencia de conducir (brevete) - Orientación - Dirección Sub Regional de Trans. y Comun. Chanka - Andah - Plataforma del Estado Peruano").entity,
+    parseDocumentTitle(
+      "Duplicado de licencia de conducir (brevete) - Orientación - Dirección Sub Regional de Trans. y Comun. Chanka - Andah - Plataforma del Estado Peruano",
+    ).entity,
   ).toBe("Dirección Sub Regional de Trans. y Comun. Chanka - Andah");
 });
 
