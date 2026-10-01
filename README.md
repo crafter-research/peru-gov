@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hola, Perú
 
-## Getting Started
+Unofficial Crafter Research prototype. Describe your situation and it routes you to the right procedure on gob.pe, showing the official page's own text and a link to the source. It is not a government site.
 
-First, run the development server:
+## How it works
+
+1. A small model rewrites the question into gob.pe-style procedure titles.
+2. The question and rewrites are embedded and matched against every top-level gob.pe page title (about 32k pages from the official sitemap).
+3. Jev (`typesafe-ai/jev`) picks one of the top 25 candidates or none.
+4. If Jev picks none but the rewrite found procedures, the user is asked to choose. If neither found anything, the app says so and links to gob.pe search.
+5. The answer card renders the official sections verbatim. A model writes a two-sentence summary using only that page.
+
+Shaping, spikes and measurements live in the Crafter vault (`04_Projects/_shaping/peru-gov/`).
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
+cp .env.example .env.local   # add an AI Gateway key from the Crafter team
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Without `data/catalog.f32`, routing only considers the fichas in `data/fichas/`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Corpus
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+bun corpus:scan    # sitemap → data/index.json (5s between requests, never drops entries)
+bun corpus:tree    # variant tree from slug hierarchy → data/tree.json
+bun corpus:embed   # catalog titles → data/catalog.{json,f32} (needs the key)
+bun corpus:crawl --limit 100   # fetch changed pages and extract fichas
+bun dataset        # local snapshot in dist/dataset
+```
 
-## Learn More
+The crawler follows gob.pe's `robots.txt`: it uses the declared sitemap instead of paginated search, and waits 5 seconds between requests.
 
-To learn more about Next.js, take a look at the following resources:
+## Checks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+bun test && bun typecheck && bunx biome check .
+bun eval   # held-out routing eval; fails below the measured baseline (39/46)
+```
