@@ -4,6 +4,8 @@ import { getShare } from "@/lib/shares";
 export const alt = "Respuesta compartida de Hola, Perú";
 export const size = ogSize;
 export const contentType = "image/png";
+// Shares are immutable; rendering satori once a day per id is plenty.
+export const revalidate = 86_400;
 
 export default async function Image({
   params,

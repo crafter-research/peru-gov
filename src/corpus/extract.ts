@@ -247,18 +247,54 @@ export async function extractFicha(
   });
 }
 
-/** Fetches one gob.pe page (following slug redirects) and extracts it. */
+/** Only gob.pe pages may be fetched; anything else means a caller passed an untrusted URL. */
+export function assertGobPeUrl(raw: string): URL {
+  const url = new URL(raw);
+  if (url.protocol !== "https:" || url.hostname !== "www.gob.pe")
+    throw new Error(`refusing to fetch non-gob.pe url: ${raw}`);
+  return url;
+}
+
+const MAX_HTML_BYTES = 2_000_000;
+
+/** Reads at most MAX_HTML_BYTES from the response; larger pages are truncated. */
+async function readBounded(res: Response): Promise<string> {
+  const declared = Number(res.headers.get("content-length") ?? 0);
+  if (declared > MAX_HTML_BYTES) throw new Error(`${res.url} → too large`);
+  if (!res.body) return res.text();
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > MAX_HTML_BYTES) {
+      await reader.cancel();
+      throw new Error(`${res.url} → too large`);
+    }
+    chunks.push(value);
+  }
+  return new TextDecoder().decode(
+    Buffer.concat(chunks.map((c) => Buffer.from(c))),
+  );
+}
+
+/** Fetches one gob.pe page (following redirects within gob.pe) and extracts it. */
 export async function fetchFicha(
   urlOrPath: string,
 ): Promise<{ ficha: Ficha; html: string }> {
   const url = urlOrPath.startsWith("http")
     ? urlOrPath
     : `https://www.gob.pe/${urlOrPath}`;
+  assertGobPeUrl(url);
   const res = await fetch(url, {
     headers: { "User-Agent": USER_AGENT },
     redirect: "follow",
+    signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
-  const html = await res.text();
+  assertGobPeUrl(res.url);
+  const html = await readBounded(res);
   return { ficha: await extractFicha(html, res.url), html };
 }

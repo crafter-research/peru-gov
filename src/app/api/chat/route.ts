@@ -7,12 +7,22 @@ import {
   toUIMessageStream,
 } from "ai";
 import { after } from "next/server";
-import { logRouteEvent, type RouteEvent } from "@/lib/analytics";
+import {
+  logRouteEvent,
+  pruneRouteEvents,
+  type RouteEvent,
+} from "@/lib/analytics";
 import { allFichas, loadOrFetchFicha } from "@/lib/fichas";
-import type { ChatBody, PeruMessage } from "@/lib/messages";
+import type { PeruMessage } from "@/lib/messages";
 import { needsDistrict } from "@/lib/municipal";
 import { createDurableLimiter, pruneRateLimits } from "@/lib/rate-limit";
-import { clientKey, isBot, MAX_MESSAGES, readJson } from "@/lib/request-guard";
+import {
+  clientKey,
+  isBot,
+  MAX_MESSAGES,
+  parseChatBody,
+  readJson,
+} from "@/lib/request-guard";
 import { retrieve } from "@/lib/retrieve";
 import { rewrite } from "@/lib/rewrite";
 import { type Candidate, jevPick, route } from "@/lib/router";
@@ -22,6 +32,17 @@ export const maxDuration = 30;
 
 const WINDOW_MS = 10 * 60_000;
 const limiter = createDurableLimiter("chat", 20, WINDOW_MS);
+/**
+ * Circuit breaker: per-IP limits are evadable by rotating addresses, so total daily
+ * spend is capped regardless of source. Tune with CHAT_GLOBAL_DAILY_LIMIT.
+ */
+const GLOBAL_DAILY_LIMIT =
+  Number(process.env.CHAT_GLOBAL_DAILY_LIMIT ?? 3000) || 3000;
+const globalLimiter = createDurableLimiter(
+  "chat-global",
+  GLOBAL_DAILY_LIMIT,
+  24 * 60 * 60_000,
+);
 
 const ANSWER_INSTRUCTIONS =
   "Eres un asistente no oficial que explica trámites del Estado peruano. Responde en 2 o 3 oraciones, en español claro, usando SOLO la ficha oficial dada. No menciones requisitos, costos ni plazos que no estén en la ficha. No inventes. Los detalles se muestran aparte; no los repitas en lista.";
@@ -46,8 +67,9 @@ function previousFicha(
 ): { id: number; title: string } | undefined {
   for (const m of [...messages].reverse()) {
     const part = m.parts.find((p) => p.type === "data-ficha");
-    if (part?.type === "data-ficha")
-      return { id: part.data.id, title: part.data.title };
+    const data = part?.type === "data-ficha" ? part.data : undefined;
+    if (data && typeof data.id === "number" && typeof data.title === "string")
+      return { id: data.id, title: data.title };
   }
   return undefined;
 }
@@ -65,36 +87,31 @@ function lastUserText(messages: PeruMessage[]): string {
 export async function POST(req: Request) {
   if (await isBot())
     return Response.json({ error: "forbidden" }, { status: 403 });
-  const body = (await readJson(req)) as
-    | ({ messages?: PeruMessage[]; sessionId?: string } & ChatBody)
-    | null;
-  if (
-    !body ||
-    !Array.isArray(body.messages) ||
-    body.messages.length > MAX_MESSAGES
-  )
+  const raw = await readJson(req);
+  const body = parseChatBody<PeruMessage>(raw);
+  if (!body) return Response.json({ error: "invalid" }, { status: 400 });
+  if (body.messages.length > MAX_MESSAGES)
     return Response.json({ error: "too large" }, { status: 413 });
-  const { messages, hint, sessionId } = body as {
-    messages: PeruMessage[];
-    sessionId?: string;
-  } & ChatBody;
+  const { messages, hint, sessionId } = body;
   const started = Date.now();
   const question = lastUserText(messages).slice(0, 500);
   const { ip, key } = clientKey(req);
   const allowed = await limiter(key);
-  if (!allowed.ok) {
+  const effective = allowed.ok ? await globalLimiter("all") : allowed;
+  if (!effective.ok) {
     const stream = createUIMessageStream<PeruMessage>({
       execute: ({ writer }) => {
         writer.write({ type: "start" });
         writer.write({
           type: "data-limited",
-          data: { retryAfterSeconds: allowed.retryAfterSeconds },
+          data: { retryAfterSeconds: effective.retryAfterSeconds },
         });
       },
     });
     return createUIMessageStreamResponse({ stream });
   }
-  if (Math.random() < 0.01) after(() => pruneRateLimits(WINDOW_MS));
+  if (Math.random() < 0.01)
+    after(() => Promise.all([pruneRateLimits(WINDOW_MS), pruneRouteEvents()]));
   const event: RouteEvent = {
     sessionId: sessionId ?? "anon",
     turn: messages.filter((m) => m.role === "user").length,
@@ -189,11 +206,20 @@ export async function POST(req: Request) {
           data: { items: result.alternatives.slice(0, 3) },
         });
 
+      // Bound the prompt: a very long gob.pe page must not inflate token spend.
+      const fichaJson = JSON.stringify({
+        title: ficha.title.slice(0, 300),
+        entity: ficha.entity.slice(0, 300),
+        sections: ficha.sections.slice(0, 12).map((s) => ({
+          heading: s.heading.slice(0, 120),
+          items: s.items.slice(0, 20).map((i) => i.slice(0, 300)),
+        })),
+      });
       const summary = streamText({
         model: "google/gemini-2.5-flash-lite",
         temperature: 0,
         instructions: ANSWER_INSTRUCTIONS,
-        prompt: `Pregunta: ${question}\n\nFicha oficial (JSON):\n${JSON.stringify({ title: ficha.title, entity: ficha.entity, sections: ficha.sections })}`,
+        prompt: `Pregunta: ${question}\n\nFicha oficial (JSON):\n${fichaJson}`,
       });
       writer.merge(
         toUIMessageStream({ stream: summary.stream, sendStart: false }),

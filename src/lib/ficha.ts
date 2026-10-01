@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+/** gob.pe ficha ids are small integers; anything past this is not a page we serve. */
+export const MAX_FICHA_ID = 10_000_000;
+
 export const sectionSchema = z.object({
   heading: z.string(),
   items: z.array(z.string()),

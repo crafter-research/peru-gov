@@ -1,7 +1,7 @@
 import { after } from "next/server";
 import { createDurableLimiter, pruneRateLimits } from "@/lib/rate-limit";
 import { clientKey, isBot, readJson } from "@/lib/request-guard";
-import { createShare, shareSchema } from "@/lib/shares";
+import { createShare, pruneShares, shareSchema } from "@/lib/shares";
 
 const WINDOW_MS = 10 * 60_000;
 const limiter = createDurableLimiter("share", 10, WINDOW_MS);
@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     return Response.json({ error: "invalid" }, { status: 400 });
   const id = await createShare(parsed.data.turns);
   if (!id) return Response.json({ error: "unavailable" }, { status: 503 });
-  if (Math.random() < 0.01) after(() => pruneRateLimits(WINDOW_MS));
+  if (Math.random() < 0.01)
+    after(() => Promise.all([pruneRateLimits(WINDOW_MS), pruneShares()]));
   return Response.json({ id, url: `/c/${id}` });
 }
