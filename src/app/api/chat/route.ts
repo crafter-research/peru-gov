@@ -11,6 +11,7 @@ import type { ChatBody, PeruMessage } from "@/lib/messages";
 import { retrieve } from "@/lib/retrieve";
 import { rewrite } from "@/lib/rewrite";
 import { type Candidate, jevPick, route } from "@/lib/router";
+import { pathFor, variantsAndRelated } from "@/lib/tree";
 
 export const maxDuration = 30;
 
@@ -74,14 +75,14 @@ export async function POST(req: Request) {
       }
       writer.write({
         type: "data-route",
-        data: {
-          steps: [
-            { label: "Entidad", value: ficha.entity },
-            { label: ficha.kind, value: ficha.title },
-          ],
-        },
+        data: { steps: await pathFor(ficha) },
       });
       writer.write({ type: "data-ficha", data: ficha });
+      const { variants, related } = await variantsAndRelated(ficha);
+      if (variants.length)
+        writer.write({ type: "data-variants", data: { items: variants } });
+      if (related.length)
+        writer.write({ type: "data-related", data: { items: related } });
       if (result.alternatives.length)
         writer.write({
           type: "data-alternatives",
