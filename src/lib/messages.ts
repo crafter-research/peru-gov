@@ -15,6 +15,7 @@ export type PeruMessage = UIMessage<
     clarify: { options: string[] };
     none: { query: string };
     limited: { retryAfterSeconds: number };
+    district: { place: string };
   }
 >;
 

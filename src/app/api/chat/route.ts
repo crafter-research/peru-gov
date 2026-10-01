@@ -8,6 +8,7 @@ import {
 } from "ai";
 import { allFichas, loadOrFetchFicha } from "@/lib/fichas";
 import type { ChatBody, PeruMessage } from "@/lib/messages";
+import { needsDistrict } from "@/lib/municipal";
 import { createLimiter } from "@/lib/rate-limit";
 import { retrieve } from "@/lib/retrieve";
 import { rewrite } from "@/lib/rewrite";
@@ -119,6 +120,14 @@ export async function POST(req: Request) {
         data: { steps: await pathFor(ficha) },
       });
       writer.write({ type: "data-ficha", data: ficha });
+      const userText = messages
+        .filter((m) => m.role === "user")
+        .flatMap((m) =>
+          m.parts.flatMap((p) => (p.type === "text" ? [p.text] : [])),
+        )
+        .join(" ");
+      const place = needsDistrict(ficha.entity, userText);
+      if (place) writer.write({ type: "data-district", data: { place } });
       const { variants, related } = await variantsAndRelated(ficha);
       if (variants.length)
         writer.write({ type: "data-variants", data: { items: variants } });

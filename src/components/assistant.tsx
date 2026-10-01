@@ -198,6 +198,7 @@ function AssistantMessage({
   const clarify = find("data-clarify");
   const none = find("data-none");
   const limited = find("data-limited");
+  const district = find("data-district");
   const settled = !streaming;
 
   return (
@@ -242,6 +243,17 @@ function AssistantMessage({
             <AnswerSkeleton />
           )}
         </div>
+      ) : null}
+
+      {district && settled ? (
+        <p className="animate-in rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3 text-[13px] leading-relaxed text-foreground/90">
+          Este trámite es de la{" "}
+          <strong className="font-semibold">
+            Municipalidad de {district.data.place}
+          </strong>
+          . Cada municipalidad tiene el suyo: dime en qué distrito estás y busco
+          el tuyo.
+        </p>
       ) : null}
 
       {ficha && settled ? (
