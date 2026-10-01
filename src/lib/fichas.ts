@@ -1,21 +1,42 @@
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fetchFicha } from "@/corpus/extract";
 import { type Ficha, fichaSchema } from "@/lib/ficha";
 
-const DIR = path.join(process.cwd(), "data", "fichas");
+/** Tracked seed fichas, plus a gitignored cache that the crawler and on-demand fetches fill. */
+export const SEED_DIR = path.join(process.cwd(), "data", "fichas");
+export const CACHE_DIR = path.join(process.cwd(), "data", "cache", "fichas");
 let cache: Map<number, Ficha> | null = null;
+
+async function readDir(dir: string): Promise<Ficha[]> {
+  const files = await readdir(dir).catch(() => [] as string[]);
+  return Promise.all(
+    files
+      .filter((f) => f.endsWith(".json"))
+      .map(async (f) =>
+        fichaSchema.parse(
+          JSON.parse(await readFile(path.join(dir, f), "utf8")),
+        ),
+      ),
+  );
+}
 
 export async function allFichas(): Promise<Map<number, Ficha>> {
   if (cache) return cache;
-  const files = (await readdir(DIR)).filter((f) => f.endsWith(".json"));
-  const fichas = await Promise.all(
-    files.map(async (f) =>
-      fichaSchema.parse(JSON.parse(await readFile(path.join(DIR, f), "utf8"))),
-    ),
-  );
-  cache = new Map(fichas.map((f) => [f.id, f]));
+  const [seeds, cached] = await Promise.all([
+    readDir(SEED_DIR),
+    readDir(CACHE_DIR),
+  ]);
+  cache = new Map([...cached, ...seeds].map((f) => [f.id, f]));
   return cache;
+}
+
+export async function writeCachedFicha(ficha: Ficha): Promise<void> {
+  await mkdir(CACHE_DIR, { recursive: true });
+  await writeFile(
+    path.join(CACHE_DIR, `${ficha.id}.json`),
+    `${JSON.stringify(ficha, null, 2)}\n`,
+  );
 }
 
 export async function loadFicha(id: number): Promise<Ficha | undefined> {
@@ -35,10 +56,7 @@ export async function loadOrFetchFicha(
   );
   if (!ficha) return undefined;
   // Local dev persists the cache; serverless filesystems are read-only, so memory is the cache there.
-  await writeFile(
-    path.join(DIR, `${ficha.id}.json`),
-    `${JSON.stringify(ficha, null, 2)}\n`,
-  ).catch(() => undefined);
+  await writeCachedFicha(ficha).catch(() => undefined);
   (await allFichas()).set(ficha.id, ficha).set(id, ficha);
   return ficha;
 }
