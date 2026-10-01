@@ -17,7 +17,14 @@ export const maxDuration = 30;
 const ANSWER_INSTRUCTIONS =
   "Eres un asistente no oficial que explica trámites del Estado peruano. Responde en 2 o 3 oraciones, en español claro, usando SOLO la ficha oficial dada. No menciones requisitos, costos ni plazos que no estén en la ficha. No inventes. Los detalles se muestran aparte; no los repitas en lista.";
 
-async function seedCandidates(): Promise<Candidate[]> {
+const HAS_CATALOG = existsSync(path.join(process.cwd(), "data", "catalog.f32"));
+
+/** Full catalog retrieval when embedded; otherwise the extracted fichas are the whole candidate set. */
+async function candidates(
+  question: string,
+  rewrites: string[],
+): Promise<Candidate[]> {
+  if (HAS_CATALOG) return retrieve(question, rewrites);
   return [...(await allFichas()).values()].map((f) => ({
     id: f.id,
     title: f.title,
