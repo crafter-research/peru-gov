@@ -6,6 +6,7 @@ import {
   type Section,
 } from "@/lib/ficha";
 
+const MAX_HEADING = 80;
 const SKIP_HEADINGS = new Set([
   "Enlaces relacionados",
   "Sobre el Estado Peruano",
@@ -91,18 +92,23 @@ export async function extractFicha(
   let current: Section = { heading: "", items: [] };
   let buf = "";
   let inMain = 0;
+  let inSubmenu = 0;
   const links: FichaLink[] = [];
   let link: { id: number; text: string } | null = null;
   let capture: "title" | "h1" | "heading" | "item" | "changed" | null = null;
 
   const flushItem = () => {
     const t = clean(buf);
-    if (t && inMain) current.items.push(t);
+    if (t && inMain && !inSubmenu) current.items.push(t);
     buf = "";
   };
   const startSection = (heading: string) => {
     if (current.heading || current.items.length) sections.push(current);
-    current = { heading, items: [] };
+    // Some pages style a lead paragraph as a heading; keep it as text, not as a section title.
+    current =
+      heading.length > MAX_HEADING
+        ? { heading: "", items: [heading] }
+        : { heading, items: [] };
   };
 
   const append = (mode: typeof capture, text: string) => {
@@ -132,6 +138,14 @@ export async function extractFicha(
         inMain++;
         el.onEndTag(() => {
           inMain--;
+        });
+      },
+    })
+    .on("main#main .submenu", {
+      element: (el) => {
+        inSubmenu++;
+        el.onEndTag(() => {
+          inSubmenu--;
         });
       },
     })

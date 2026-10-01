@@ -42,6 +42,15 @@ describe("extractFicha", () => {
     expect(f.kind).toBe("Orientación");
   });
 
+  test("a guide drops its tab submenu and demotes paragraph-length headings", async () => {
+    const f = await extractFicha(await fixture("191-guide"), "https://www.gob.pe/191");
+    const all = f.sections.flatMap((s) => s.items);
+    expect(all).not.toContain("Revalidar Licencia de Conducir en Lima");
+    expect(f.sections.every((s) => s.heading.length <= 80)).toBe(true);
+    expect(all.some((i) => i.startsWith("Para licencias de Clase A, si quieres realizar tu trámite de manera virtual"))).toBe(true);
+    expect(f.links.map((l) => l.title)).toContain("Revalidar Licencia de Conducir en Lima");
+  });
+
   test("brevete page parses", async () => {
     const f = await extractFicha(
       await fixture("135-obtener-licencia-de-conducir-brevete-por-primera-vez"),
