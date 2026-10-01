@@ -45,3 +45,6 @@ next-env.d.ts
 /data/raw/
 /data/*.f32
 /dist/
+/data/index.json
+/data/tree.json
+/data/catalog.json
