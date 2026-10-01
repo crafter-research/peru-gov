@@ -92,56 +92,62 @@ export async function extractFicha(
     current = { heading, items: [] };
   };
 
+  const append = (mode: typeof capture, text: string) => {
+    if (capture !== mode) return;
+    if (mode === "title") docTitle += text;
+    else if (mode === "h1") h1 += text;
+    else if (mode === "changed") lastChanged += text;
+    else buf += text;
+  };
+  const captureUntilEnd =
+    (mode: typeof capture, onEnd?: () => void) =>
+    (el: HTMLRewriterTypes.Element) => {
+      capture = mode;
+      el.onEndTag(() => {
+        onEnd?.();
+        capture = null;
+      });
+    };
+
   const rewriter = new HTMLRewriter()
     .on("title", {
-      element: () => void (capture = "title"),
-      text: (t) => void (capture === "title" && (docTitle += t.text)),
+      element: captureUntilEnd("title"),
+      text: (t) => append("title", t.text),
     })
     .on("main#main", {
       element: (el) => {
         inMain++;
-        el.onEndTag(() => void inMain--);
+        el.onEndTag(() => {
+          inMain--;
+        });
       },
     })
     .on("main#main h1", {
-      element: (el) => {
-        capture = "h1";
-        el.onEndTag(() => void (capture = null));
-      },
-      text: (t) => void (capture === "h1" && (h1 += t.text)),
+      element: captureUntilEnd("h1"),
+      text: (t) => append("h1", t.text),
     })
     .on("main#main h2, main#main h3", {
       element: (el) => {
         flushItem();
-        capture = "heading";
-        let heading = "";
-        el.onEndTag(() => {
-          capture = null;
-          heading = clean(buf);
+        captureUntilEnd("heading", () => {
+          const heading = clean(buf);
           buf = "";
           startSection(heading);
-        });
+        })(el);
       },
-      text: (t) => void (capture === "heading" && (buf += t.text)),
+      text: (t) => append("heading", t.text),
     })
     .on("main#main li, main#main p", {
       element: (el) => {
         if (capture === "heading") return;
         flushItem();
-        capture = "item";
-        el.onEndTag(() => {
-          flushItem();
-          capture = null;
-        });
+        captureUntilEnd("item", flushItem)(el);
       },
-      text: (t) => void (capture === "item" && (buf += t.text)),
+      text: (t) => append("item", t.text),
     })
     .on("main#main .last-modification", {
-      element: (el) => {
-        capture = "changed";
-        el.onEndTag(() => void (capture = null));
-      },
-      text: (t) => void (capture === "changed" && (lastChanged += t.text)),
+      element: captureUntilEnd("changed"),
+      text: (t) => append("changed", t.text),
     });
 
   await rewriter.transform(new Response(html)).text();
