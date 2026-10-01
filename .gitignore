@@ -52,3 +52,4 @@ next-env.d.ts
 /.agents/
 /.claude/
 /skills-lock.json
+/eval/stress-results.json
