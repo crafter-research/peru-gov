@@ -7,6 +7,8 @@ import type { Candidate } from "@/lib/router";
 
 let tree: Tree | null = null;
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 async function loadTree(): Promise<Tree> {
   if (tree) return tree;
   try {
@@ -26,7 +28,7 @@ export async function pathFor(ficha: Ficha): Promise<RouteStep[]> {
   return [
     { label: "Entidad", value: ficha.entity },
     ...(parent !== undefined
-      ? [{ label: "Guía", value: t.titles[parent] }]
+      ? [{ label: "Guía", value: capitalize(t.titles[parent]) }]
       : []),
     { label: ficha.kind, value: ficha.title },
   ];
