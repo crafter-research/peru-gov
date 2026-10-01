@@ -11,14 +11,14 @@ import photo from "../../public/machu-picchu.jpg";
 export function Backdrop({ focused }: { focused: boolean }) {
   const [loaded, setLoaded] = useState(false);
   const state = !loaded
-    ? "scale-110 blur-3xl brightness-50"
+    ? "scale-110 blur-3xl brightness-75 dark:brightness-50"
     : focused
-      ? "scale-110 blur-2xl brightness-[0.45]"
-      : "scale-100 blur-0 brightness-[0.8]";
+      ? "scale-110 blur-2xl brightness-125 saturate-50 dark:brightness-[0.45] dark:saturate-100"
+      : "scale-100 blur-0 brightness-100 dark:brightness-[0.8]";
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#141b15]"
+      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-background"
     >
       <Image
         src={photo}
@@ -29,7 +29,7 @@ export function Backdrop({ focused }: { focused: boolean }) {
         onLoad={() => setLoaded(true)}
         className={`object-cover object-[50%_40%] transition-[filter,transform] duration-[1400ms] ease-smooth will-change-[filter,transform] ${state}`}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-black/70" />
+      <div className="absolute inset-0 backdrop-overlay" />
     </div>
   );
 }

@@ -19,7 +19,7 @@ function Mark() {
         width="22"
         height="22"
         rx="7"
-        className="fill-white/10 stroke-white/20"
+        className="fill-foreground/10 stroke-foreground/20"
       />
       <path d="M5 16.5 9.5 9l3 4.5L14.5 10 19 16.5Z" className="fill-accent" />
     </svg>
@@ -35,7 +35,7 @@ export function SiteHeader({ onHome }: { onHome?: () => void }) {
     </>
   );
   const brandClass =
-    "flex items-center gap-2 rounded-xl px-1.5 py-1 text-sm text-white/90 transition hover:bg-white/5 hover:text-white";
+    "flex items-center gap-2 rounded-xl px-1.5 py-1 text-sm text-foreground transition hover:bg-foreground/5 hover:text-foreground";
   return (
     <header className="relative z-30 flex items-center justify-between gap-3 px-3 pt-[max(env(safe-area-inset-top),0.75rem)] pb-2 sm:px-5">
       {onHome ? (
@@ -52,15 +52,15 @@ export function SiteHeader({ onHome }: { onHome?: () => void }) {
           {brand}
         </Link>
       )}
-      <nav className="flex items-center gap-1.5 text-[12px] text-white/70">
-        <span className="hidden rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-white/60 md:inline">
+      <nav className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+        <span className="hidden rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground md:inline">
           No oficial · no es un sitio del Estado
         </span>
         <a
           href="https://crafter.ing"
           target="_blank"
           rel="noreferrer"
-          className="rounded-lg px-2 py-1 transition hover:bg-white/5 hover:text-white"
+          className="rounded-lg px-2 py-1 transition hover:bg-foreground/5 hover:text-foreground"
         >
           Crafter Research
         </a>
@@ -68,7 +68,7 @@ export function SiteHeader({ onHome }: { onHome?: () => void }) {
           href={REPO}
           target="_blank"
           rel="noreferrer"
-          className="grid size-8 place-items-center rounded-lg border border-white/10 bg-[#121813] text-white/80 transition hover:border-white/20 hover:text-white"
+          className="grid size-8 place-items-center rounded-lg border border-border bg-surface text-foreground/85 transition hover:border-foreground/20 hover:text-foreground"
         >
           <span className="sr-only">Repositorio en GitHub</span>
           <svg

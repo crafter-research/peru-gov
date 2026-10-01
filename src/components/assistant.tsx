@@ -100,7 +100,7 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
           </div>
           <div
             aria-hidden
-            className="pointer-events-none fixed inset-x-0 bottom-0 z-10 h-44 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+            className="pointer-events-none fixed inset-x-0 bottom-0 z-10 h-44 bg-gradient-to-t from-background via-background/60 to-transparent"
           />
           <div className="sticky bottom-0 z-20 pt-4 pb-3">
             <ViewTransition name="composer">
@@ -118,12 +118,12 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
             <div className="relative text-center">
               <div
                 aria-hidden
-                className="absolute -inset-x-24 -inset-y-16 -z-10 bg-black/25 backdrop-blur-xl [mask-image:radial-gradient(closest-side,#000_45%,transparent)]"
+                className="absolute -inset-x-24 -inset-y-16 -z-10 bg-background/25 backdrop-blur-xl [mask-image:radial-gradient(closest-side,#000_45%,transparent)]"
               />
-              <h1 className="font-display text-[clamp(3rem,11vw,5.5rem)] leading-[0.95] font-normal tracking-[-0.02em] text-white">
+              <h1 className="font-display text-[clamp(3rem,11vw,5.5rem)] leading-[0.95] font-normal tracking-[-0.02em] text-foreground">
                 Hola, <em className="font-light italic">Perú</em>
               </h1>
-              <p className="mt-4 text-[15px] text-white/80">
+              <p className="mt-4 text-[15px] text-foreground/85">
                 Cuéntame tu situación y te llevo al trámite correcto de gob.pe.
               </p>
             </div>
@@ -142,7 +142,7 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
                   key={e}
                   type="button"
                   onClick={() => ask(e)}
-                  className="rounded-full border border-white/10 bg-[#121813] px-3.5 py-1.5 text-[13px] text-white/90 shadow-[0_8px_24px_-12px_rgb(0_0_0/0.7)] transition duration-300 ease-smooth hover:-translate-y-0.5 hover:border-accent/40 hover:text-white"
+                  className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-[13px] text-foreground shadow-[0_8px_24px_-12px_rgb(0_0_0/0.7)] transition duration-300 ease-smooth hover:-translate-y-0.5 hover:border-accent/40 hover:text-foreground"
                 >
                   {e}
                 </button>
@@ -157,7 +157,7 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
 
 function Thinking() {
   return (
-    <output className="flex items-center gap-2 text-sm text-white/70">
+    <output className="flex items-center gap-2 text-sm text-muted-foreground">
       <span className="relative flex size-2">
         <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent/70" />
         <span className="relative inline-flex size-2 rounded-full bg-accent" />
@@ -183,7 +183,7 @@ function AssistantMessage({
     <Streamdown
       animated
       isAnimating={streaming}
-      className="typeset text-[15px] text-white/90"
+      className="typeset text-[15px] text-foreground"
     >
       {summary}
     </Streamdown>
@@ -197,7 +197,7 @@ function AssistantMessage({
             return (
               <ol
                 key={key}
-                className="flex flex-wrap items-center gap-1.5 text-xs text-white/65"
+                className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground"
               >
                 {part.data.steps.map((s, j) => (
                   <li
@@ -205,14 +205,14 @@ function AssistantMessage({
                     className="flex items-center gap-1.5"
                   >
                     {j > 0 ? (
-                      <span aria-hidden className="text-white/35">
+                      <span aria-hidden className="text-muted-foreground/75">
                         /
                       </span>
                     ) : null}
                     <span
                       className={
                         j === part.data.steps.length - 1
-                          ? "text-white/90"
+                          ? "text-foreground"
                           : undefined
                       }
                     >
@@ -269,7 +269,7 @@ function AssistantMessage({
                       key={o}
                       type="button"
                       onClick={() => onAsk(o)}
-                      className="rounded-2xl bg-white/5 px-4 py-3 text-left text-[15px] transition duration-300 ease-smooth hover:bg-white/10"
+                      className="rounded-2xl bg-foreground/5 px-4 py-3 text-left text-[15px] transition duration-300 ease-smooth hover:bg-foreground/10"
                     >
                       {o}
                     </button>
@@ -319,14 +319,14 @@ function ChipRow({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-xs text-white/60">{label}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
       <div className="flex flex-wrap gap-2">
         {items.map((c) => (
           <button
             key={c.id}
             type="button"
             onClick={() => onAsk(c.title, c.id)}
-            className="glass rounded-full px-3.5 py-1.5 text-left text-[13px] text-white/90 transition duration-300 ease-smooth first-letter:uppercase hover:-translate-y-0.5 hover:text-white"
+            className="glass rounded-full px-3.5 py-1.5 text-left text-[13px] text-foreground transition duration-300 ease-smooth first-letter:uppercase hover:-translate-y-0.5 hover:text-foreground"
           >
             {c.title}
           </button>

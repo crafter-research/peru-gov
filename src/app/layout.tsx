@@ -29,10 +29,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-dvh flex-col font-sans">
         {children}
-        <footer className="px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-2 text-center text-[10px] text-white/45 sm:px-6">
+        <footer className="px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-2 text-center text-[10px] text-muted-foreground/75 sm:px-6">
           Foto: Martin St-Amant,{" "}
           <a
-            className="underline underline-offset-2 hover:text-white/70"
+            className="underline underline-offset-2 hover:text-foreground"
             href="https://commons.wikimedia.org/wiki/File:80_-_Machu_Picchu_-_Juin_2009_-_edit.2.jpg"
             target="_blank"
             rel="noreferrer"
@@ -41,7 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </a>
           ,{" "}
           <a
-            className="underline underline-offset-2 hover:text-white/70"
+            className="underline underline-offset-2 hover:text-foreground"
             href="https://creativecommons.org/licenses/by-sa/3.0/"
             target="_blank"
             rel="noreferrer"

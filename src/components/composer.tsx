@@ -76,7 +76,7 @@ export function Composer({
               type="submit"
               disabled={busy || empty}
               aria-label="Preguntar"
-              className="grid size-9 place-items-center rounded-xl bg-foreground text-background transition duration-200 ease-smooth hover:scale-105 active:scale-95 disabled:bg-white/10 disabled:text-muted-foreground disabled:hover:scale-100"
+              className="grid size-9 place-items-center rounded-xl bg-foreground text-background transition duration-200 ease-smooth hover:scale-105 active:scale-95 disabled:bg-foreground/10 disabled:text-muted-foreground disabled:hover:scale-100"
             >
               <svg
                 width="16"

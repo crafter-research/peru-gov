@@ -43,7 +43,7 @@ export default async function TramitePage({
         <FichaCard ficha={ficha} />
         <Link
           href={`/?q=${encodeURIComponent(ficha.title)}`}
-          className="self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-white"
+          className="self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-foreground"
         >
           Preguntar sobre este trámite
         </Link>
