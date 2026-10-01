@@ -1,0 +1,8 @@
+# CLI deploys ship the generated corpus (data/index.json, tree.json, catalog.*) that git ignores.
+node_modules
+.next
+.env*
+!.env.example
+data/raw
+dist
+test/fixtures
