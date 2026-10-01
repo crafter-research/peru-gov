@@ -2,23 +2,48 @@
 @import "streamdown/styles.css";
 @source "../../node_modules/streamdown/dist/*.js";
 
-/* The interface always sits on a dark photographic backdrop, so it ships one dark palette. */
+/* Light and dark follow the system. Surfaces sit on a photographic backdrop in both. */
 :root {
-  color-scheme: dark;
-  --background: oklch(0.16 0.01 150);
-  --foreground: oklch(0.97 0.005 100);
-  --card: oklch(0.2 0.01 150 / 0.72);
+  color-scheme: light dark;
+  --background: oklch(0.96 0.008 140);
+  --foreground: oklch(0.2 0.015 150);
+  --surface: oklch(0.995 0.003 140);
+  --card: var(--surface);
   --card-foreground: var(--foreground);
-  --muted: oklch(0.28 0.01 150 / 0.6);
-  --muted-foreground: oklch(0.78 0.01 120);
-  --border: oklch(1 0 0 / 0.1);
-  --input: oklch(1 0 0 / 0.12);
-  --primary: oklch(0.97 0.005 100);
-  --primary-foreground: oklch(0.18 0.01 150);
-  --accent: oklch(0.82 0.11 145);
-  --glass: oklch(0.17 0.012 150 / 0.68);
-  --glass-strong: oklch(0.15 0.012 150 / 0.82);
+  --muted: oklch(0.93 0.008 140);
+  --muted-foreground: oklch(0.45 0.015 150);
+  --border: oklch(0.2 0.02 150 / 0.12);
+  --input: oklch(0.2 0.02 150 / 0.14);
+  --primary: oklch(0.2 0.015 150);
+  --primary-foreground: oklch(0.98 0.005 140);
+  --accent: oklch(0.5 0.13 150);
+  --glass: oklch(1 0 0 / 0.72);
+  --glass-strong: var(--surface);
+  --overlay-top: oklch(1 0 0 / 0.35);
+  --overlay-mid: oklch(1 0 0 / 0.1);
+  --overlay-bottom: oklch(1 0 0 / 0.55);
+  --border-glow: oklch(0.55 0.14 150 / 0.55);
   --radius: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.16 0.01 150);
+    --foreground: oklch(0.97 0.005 100);
+    --surface: oklch(0.15 0.012 150);
+    --muted: oklch(0.28 0.01 150 / 0.6);
+    --muted-foreground: oklch(0.78 0.01 120);
+    --border: oklch(1 0 0 / 0.1);
+    --input: oklch(1 0 0 / 0.12);
+    --primary: oklch(0.97 0.005 100);
+    --primary-foreground: oklch(0.18 0.01 150);
+    --accent: oklch(0.82 0.11 145);
+    --glass: oklch(0.17 0.012 150 / 0.68);
+    --overlay-top: oklch(0 0 0 / 0.4);
+    --overlay-mid: oklch(0 0 0 / 0.1);
+    --overlay-bottom: oklch(0 0 0 / 0.7);
+    --border-glow: oklch(0.82 0.16 145 / 0.85);
+  }
 }
 
 @theme inline {
@@ -31,6 +56,7 @@
   --color-accent: var(--accent);
   --color-glass: var(--glass);
   --color-glass-strong: var(--glass-strong);
+  --color-surface: var(--surface);
   --font-sans: var(--font-inter);
   --font-display: var(--font-fraunces);
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
@@ -51,12 +77,12 @@ body {
   background-clip: padding-box;
   box-shadow:
     inset 0 1px 0 0 oklch(1 0 0 / 0.06),
-    0 24px 60px -24px oklch(0 0 0 / 0.6);
+    0 24px 60px -24px oklch(0 0 0 / 0.45);
   position: relative;
 }
 
 @utility glass-solid {
-  background: oklch(0.15 0.012 150);
+  background: var(--surface);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -182,4 +208,13 @@ body {
 
 ::view-transition-new(.hero-enter) {
   animation: hero-in 600ms var(--ease-smooth) both;
+}
+
+@utility backdrop-overlay {
+  background: linear-gradient(
+    to bottom,
+    var(--overlay-top),
+    var(--overlay-mid),
+    var(--overlay-bottom)
+  );
 }
