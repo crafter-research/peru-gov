@@ -27,9 +27,14 @@ const EXAMPLES = [
 type Ask = (text: string, hint?: number) => void;
 
 export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
+  // Anonymous per-conversation id for routing analytics; a new chat gets a new one.
+  const session = useRef(crypto.randomUUID());
   const { messages, sendMessage, setMessages, stop, status, error } =
     useChat<PeruMessage>({
-      transport: new DefaultChatTransport({ api: "/api/chat" }),
+      transport: new DefaultChatTransport({
+        api: "/api/chat",
+        body: () => ({ sessionId: session.current }),
+      }),
     });
   const busy = status === "submitted" || status === "streaming";
   const [started, setStarted] = useState(false);
@@ -48,6 +53,7 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
 
   const newChat = () => {
     if (busy) stop();
+    session.current = crypto.randomUUID();
     startTransition(() => {
       setMessages([]);
       setStarted(false);

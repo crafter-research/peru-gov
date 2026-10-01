@@ -113,8 +113,10 @@ export function AboutDialog() {
           <section className="flex flex-col gap-1.5 text-sm leading-relaxed text-foreground/85">
             <h3 className="font-medium text-foreground">Privacidad</h3>
             <p>
-              No necesitas cuenta y no guardamos tus conversaciones. No escribas
-              tu DNI ni datos personales.
+              No necesitas cuenta. Para mejorar las respuestas guardamos de
+              forma anónima tus preguntas y a qué ficha de gob.pe te llevamos,
+              sin tu IP y borrando números de documento, teléfonos y correos. No
+              escribas datos personales.
             </p>
           </section>
 
