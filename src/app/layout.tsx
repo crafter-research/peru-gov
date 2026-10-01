@@ -28,18 +28,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${fraunces.variable} h-full`}
     >
       <body className="flex min-h-dvh flex-col font-sans">
-        <header className="flex items-center justify-between gap-3 px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-2 text-[11px] text-white/70 sm:px-6">
-          <span className="shrink-0 font-medium tracking-wide whitespace-nowrap text-white/90">
-            peru-gov
-          </span>
-          <span className="text-right">
-            <span className="sm:hidden">No oficial · Crafter Research</span>
-            <span className="hidden sm:inline">
-              Prototipo no oficial de Crafter Research · no es un sitio del
-              Estado
-            </span>
-          </span>
-        </header>
         {children}
         <footer className="px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-2 text-center text-[10px] text-white/45 sm:px-6">
           Foto: Martin St-Amant,{" "}

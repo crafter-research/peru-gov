@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Backdrop } from "@/components/backdrop";
 import { FichaCard } from "@/components/ficha-card";
+import { SiteHeader } from "@/components/site-header";
 import { allFichas, loadFicha } from "@/lib/fichas";
 
 export const dynamicParams = true;
@@ -34,17 +36,18 @@ export default async function TramitePage({
   const ficha = await fichaFor(params);
   if (!ficha) notFound();
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-8">
-      <Link href="/" className="text-sm text-muted hover:text-foreground">
-        ← Hola, Perú
-      </Link>
-      <FichaCard ficha={ficha} />
-      <Link
-        href={`/?q=${encodeURIComponent(ficha.title)}`}
-        className="self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-white"
-      >
-        Preguntar sobre este trámite
-      </Link>
-    </main>
+    <>
+      <SiteHeader />
+      <Backdrop focused />
+      <main className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-8">
+        <FichaCard ficha={ficha} />
+        <Link
+          href={`/?q=${encodeURIComponent(ficha.title)}`}
+          className="self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-white"
+        >
+          Preguntar sobre este trámite
+        </Link>
+      </main>
+    </>
   );
 }
