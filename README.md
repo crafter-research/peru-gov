@@ -40,3 +40,5 @@ The crawler follows gob.pe's `robots.txt`: it uses the declared sitemap instead 
 bun test && bun typecheck && bunx biome check .
 bun eval   # held-out routing eval; fails below the measured baseline (39/46)
 ```
+
+Scripts unset any inherited `AI_GATEWAY_API_KEY` so `.env.local` (the Crafter key) always wins; a key exported in your shell would otherwise take precedence and bill another team.

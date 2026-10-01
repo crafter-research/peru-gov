@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bun --bun next dev",
+    "dev": "env -u AI_GATEWAY_API_KEY bun --bun next dev",
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
@@ -12,9 +12,9 @@
     "typecheck": "tsc --noEmit",
     "corpus:scan": "bun scripts/scan.ts",
     "corpus:crawl": "bun scripts/crawl.ts",
-    "corpus:embed": "bun --env-file=.env.local scripts/embed-catalog.ts",
+    "corpus:embed": "env -u AI_GATEWAY_API_KEY bun --env-file=.env.local scripts/embed-catalog.ts",
     "corpus:tree": "bun scripts/build-tree.ts",
-    "eval": "bun --env-file=.env.local scripts/eval.ts",
+    "eval": "env -u AI_GATEWAY_API_KEY bun --env-file=.env.local scripts/eval.ts",
     "dataset": "bun scripts/dataset.ts"
   },
   "dependencies": {
