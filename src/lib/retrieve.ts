@@ -4,13 +4,22 @@ import { embedMany } from "ai";
 import type { Candidate } from "@/lib/router";
 
 export const EMBED_MODEL = "openai/text-embedding-3-small";
+export const EMBED_DIMS = 512;
+export const embedOptions = { openai: { dimensions: EMBED_DIMS } };
+
+/** Unit vectors stored as int8 (×127): 32k titles fit in ~17 MB; ranking by dot product is unchanged. */
+export function quantize(v: ArrayLike<number>): Int8Array {
+  return Int8Array.from(v, (x) =>
+    Math.max(-127, Math.min(127, Math.round(x * 127))),
+  );
+}
 const DATA = path.join(process.cwd(), "data");
 
 type Catalog = {
   ids: number[];
   titles: string[];
   dim: number;
-  vectors: Float32Array;
+  vectors: Int8Array;
 };
 let catalog: Catalog | null = null;
 
@@ -22,16 +31,16 @@ async function loadCatalog(): Promise<Catalog> {
   const meta: { ids: number[]; titles: string[]; dim: number } = JSON.parse(
     await readFile(path.join(DATA, "catalog.json"), "utf8"),
   );
-  const buf = await readFile(path.join(DATA, "catalog.f32"));
+  const buf = await readFile(path.join(DATA, "catalog.i8"));
   catalog = {
     ...meta,
-    vectors: new Float32Array(buf.buffer, buf.byteOffset, buf.byteLength / 4),
+    vectors: new Int8Array(buf.buffer, buf.byteOffset, buf.byteLength),
   };
   return catalog;
 }
 
 export function topK(
-  vectors: Float32Array,
+  vectors: ArrayLike<number>,
   dim: number,
   q: ArrayLike<number>,
   k: number,
@@ -50,10 +59,10 @@ export function topK(
 /** Reciprocal rank fusion over ranked lists of row indexes. */
 export function rrf(lists: number[][], k: number, c = 60): number[] {
   const score = new Map<number, number>();
-  for (const list of lists)
-    list.forEach((row, rank) =>
-      score.set(row, (score.get(row) ?? 0) + 1 / (c + rank)),
-    );
+  for (const list of lists) {
+    for (const [rank, row] of list.entries())
+      score.set(row, (score.get(row) ?? 0) + 1 / (c + rank));
+  }
   return [...score]
     .sort((a, b) => b[1] - a[1])
     .slice(0, k)
@@ -70,6 +79,7 @@ export async function retrieve(
   const { embeddings } = await embedMany({
     model: EMBED_MODEL,
     values: [question, ...rewrites].map(normalize),
+    providerOptions: embedOptions,
   });
   const rows = rrf(
     embeddings.map((e) => topK(cat.vectors, cat.dim, e, 50)),
