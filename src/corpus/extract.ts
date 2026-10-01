@@ -1,4 +1,9 @@
-import { type Ficha, fichaSchema, type Section } from "@/lib/ficha";
+import {
+  type Ficha,
+  type FichaLink,
+  fichaSchema,
+  type Section,
+} from "@/lib/ficha";
 
 const SKIP_HEADINGS = new Set([
   "Enlaces relacionados",
@@ -80,6 +85,8 @@ export async function extractFicha(
   let current: Section = { heading: "", items: [] };
   let buf = "";
   let inMain = 0;
+  const links: FichaLink[] = [];
+  let link: { id: number; text: string } | null = null;
   let capture: "title" | "h1" | "heading" | "item" | "changed" | null = null;
 
   const flushItem = () => {
@@ -145,6 +152,22 @@ export async function extractFicha(
       },
       text: (t) => append("item", t.text),
     })
+    .on("main#main a[href]", {
+      element: (el) => {
+        const m = el
+          .getAttribute("href")
+          ?.match(/^(?:https?:\/\/www\.gob\.pe)?\/(\d+)-[^/?#]+/);
+        if (!m) return;
+        link = { id: Number(m[1]), text: "" };
+        el.onEndTag(() => {
+          if (link) links.push({ id: link.id, title: clean(link.text) });
+          link = null;
+        });
+      },
+      text: (t) => {
+        if (link) link.text += t.text;
+      },
+    })
     .on("main#main .last-modification", {
       element: captureUntilEnd("changed"),
       text: (t) => append("changed", t.text),
@@ -173,6 +196,11 @@ export async function extractFicha(
     entity,
     sections: kept,
     costs: extractCosts(kept.flatMap((s) => s.items).join(" ")),
+    links: [
+      ...new Map(
+        links.filter((l) => l.id !== id && l.title).map((l) => [l.id, l]),
+      ).values(),
+    ],
     lastChanged: parseLastChanged(lastChanged),
     extractedAt,
   });

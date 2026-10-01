@@ -5,6 +5,11 @@ export const sectionSchema = z.object({
   items: z.array(z.string()),
 });
 
+export const linkSchema = z.object({
+  id: z.number().int().positive(),
+  title: z.string(),
+});
+
 export const fichaSchema = z.object({
   id: z.number().int().positive(),
   slug: z.string(),
@@ -14,9 +19,11 @@ export const fichaSchema = z.object({
   entity: z.string(),
   sections: z.array(sectionSchema),
   costs: z.array(z.string()),
+  links: z.array(linkSchema).default([]),
   lastChanged: z.string().nullable(),
   extractedAt: z.iso.datetime(),
 });
 
 export type Section = z.infer<typeof sectionSchema>;
 export type Ficha = z.infer<typeof fichaSchema>;
+export type FichaLink = z.infer<typeof linkSchema>;

@@ -29,6 +29,7 @@ describe("extractFicha", () => {
     );
     expect(JSON.stringify(f)).not.toContain("&gt;");
     expect(f.lastChanged).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(f.links.every((l) => l.id !== 224 && l.title.length > 0)).toBe(true);
   });
 
   test("brevete page parses", async () => {
