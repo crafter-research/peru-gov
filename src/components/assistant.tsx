@@ -2,11 +2,18 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useEffect, useRef } from "react";
+import {
+  startTransition,
+  useEffect,
+  useRef,
+  useState,
+  ViewTransition,
+} from "react";
 import { Streamdown } from "streamdown";
 import { Backdrop } from "@/components/backdrop";
 import { Composer } from "@/components/composer";
 import { FichaCard } from "@/components/ficha-card";
+import { SiteHeader } from "@/components/site-header";
 import type { PeruMessage } from "@/lib/messages";
 
 const EXAMPLES = [
@@ -19,21 +26,34 @@ const EXAMPLES = [
 type Ask = (text: string, hint?: number) => void;
 
 export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
-  const { messages, sendMessage, status, error } = useChat<PeruMessage>({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
-  });
+  const { messages, sendMessage, setMessages, stop, status, error } =
+    useChat<PeruMessage>({
+      transport: new DefaultChatTransport({ api: "/api/chat" }),
+    });
   const busy = status === "submitted" || status === "streaming";
+  const [started, setStarted] = useState(false);
+  const chatting = started || messages.length > 0;
   const end = useRef<HTMLDivElement>(null);
 
   const ask: Ask = (text, hint) => {
     if (!text.trim() || busy) return;
+    if (!chatting) startTransition(() => setStarted(true));
     sendMessage({ text }, hint ? { body: { hint } } : undefined);
+  };
+
+  const newChat = () => {
+    if (busy) stop();
+    startTransition(() => {
+      setMessages([]);
+      setStarted(false);
+    });
   };
 
   const asked = useRef(false);
   useEffect(() => {
     if (initialQuestion && !asked.current) {
       asked.current = true;
+      setStarted(true);
       sendMessage({ text: initialQuestion });
     }
   }, [initialQuestion, sendMessage]);
@@ -44,81 +64,94 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
       end.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [count]);
 
-  if (!messages.length) {
-    return (
-      <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-7 px-4 pb-16">
-        <Backdrop focused={false} />
-        <div className="relative text-center">
+  return (
+    <>
+      <SiteHeader onHome={newChat} />
+      <Backdrop focused={chatting} />
+      {chatting ? (
+        <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col px-4">
+          <div className="flex flex-1 flex-col gap-8 py-6">
+            {messages.map((m, i) =>
+              m.role === "user" ? (
+                <p
+                  key={m.id}
+                  className="glass glass-solid animate-in max-w-[85%] self-end rounded-3xl rounded-br-lg px-4 py-2.5 text-[15px]"
+                >
+                  {m.parts
+                    .map((p) => (p.type === "text" ? p.text : ""))
+                    .join("")}
+                </p>
+              ) : (
+                <AssistantMessage
+                  key={m.id}
+                  message={m}
+                  onAsk={ask}
+                  streaming={busy && i === messages.length - 1}
+                />
+              ),
+            )}
+            {busy && messages.at(-1)?.role === "user" ? <Thinking /> : null}
+            {error ? (
+              <p className="glass glass-solid self-start rounded-2xl px-4 py-3 text-sm">
+                No pude responder. Intenta de nuevo.
+              </p>
+            ) : null}
+            <div ref={end} />
+          </div>
           <div
             aria-hidden
-            className="absolute -inset-x-24 -inset-y-16 -z-10 bg-black/25 backdrop-blur-xl [mask-image:radial-gradient(closest-side,#000_45%,transparent)]"
+            className="pointer-events-none fixed inset-x-0 bottom-0 z-10 h-44 bg-gradient-to-t from-black/80 via-black/40 to-transparent"
           />
-          <h1 className="font-display text-[clamp(3rem,11vw,5.5rem)] leading-[0.95] font-normal tracking-[-0.02em] text-white">
-            Hola, <em className="font-light italic">Perú</em>
-          </h1>
-          <p className="mt-4 text-[15px] text-white/80">
-            Cuéntame tu situación y te llevo al trámite correcto de gob.pe.
-          </p>
-        </div>
-        <Composer
-          onSubmit={ask}
-          busy={busy}
-          placeholder="¿Qué necesitas? Por ejemplo, “perdí mi DNI”"
-        />
-        <div className="flex flex-wrap justify-center gap-2">
-          {EXAMPLES.map((e) => (
-            <button
-              key={e}
-              type="button"
-              onClick={() => ask(e)}
-              className="glass rounded-full px-3.5 py-1.5 text-[13px] text-white/90 transition duration-300 ease-smooth hover:-translate-y-0.5 hover:text-white"
-            >
-              {e}
-            </button>
-          ))}
-        </div>
-      </main>
-    );
-  }
-
-  return (
-    <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col px-4">
-      <Backdrop focused />
-      <div className="flex flex-1 flex-col gap-8 py-6">
-        {messages.map((m, i) =>
-          m.role === "user" ? (
-            <p
-              key={m.id}
-              className="glass max-w-[85%] self-end rounded-3xl rounded-br-lg px-4 py-2.5 text-[15px]"
-            >
-              {m.parts.map((p) => (p.type === "text" ? p.text : "")).join("")}
-            </p>
-          ) : (
-            <AssistantMessage
-              key={m.id}
-              message={m}
-              onAsk={ask}
-              streaming={busy && i === messages.length - 1}
+          <div className="sticky bottom-0 z-20 pt-4 pb-3">
+            <ViewTransition name="composer">
+              <Composer
+                onSubmit={ask}
+                busy={busy}
+                placeholder="Pregunta otra cosa"
+              />
+            </ViewTransition>
+          </div>
+        </main>
+      ) : (
+        <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-7 px-4 pb-16">
+          <ViewTransition name="hero" exit="hero-exit" enter="hero-enter">
+            <div className="relative text-center">
+              <div
+                aria-hidden
+                className="absolute -inset-x-24 -inset-y-16 -z-10 bg-black/25 backdrop-blur-xl [mask-image:radial-gradient(closest-side,#000_45%,transparent)]"
+              />
+              <h1 className="font-display text-[clamp(3rem,11vw,5.5rem)] leading-[0.95] font-normal tracking-[-0.02em] text-white">
+                Hola, <em className="font-light italic">Perú</em>
+              </h1>
+              <p className="mt-4 text-[15px] text-white/80">
+                Cuéntame tu situación y te llevo al trámite correcto de gob.pe.
+              </p>
+            </div>
+          </ViewTransition>
+          <ViewTransition name="composer">
+            <Composer
+              onSubmit={ask}
+              busy={busy}
+              placeholder="¿Qué necesitas? Por ejemplo, “perdí mi DNI”"
             />
-          ),
-        )}
-        {busy && messages.at(-1)?.role === "user" ? <Thinking /> : null}
-        {error ? (
-          <p className="glass self-start rounded-2xl px-4 py-3 text-sm">
-            No pude responder. Intenta de nuevo.
-          </p>
-        ) : null}
-        <div ref={end} />
-      </div>
-      <div className="sticky bottom-0 z-20 -mx-4 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-4 pt-8 pb-3">
-        <Composer
-          onSubmit={ask}
-          busy={busy}
-          placeholder="Pregunta otra cosa"
-          solid
-        />
-      </div>
-    </main>
+          </ViewTransition>
+          <ViewTransition name="examples" exit="hero-exit" enter="hero-enter">
+            <div className="flex flex-wrap justify-center gap-2">
+              {EXAMPLES.map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => ask(e)}
+                  className="rounded-full border border-white/10 bg-[#121813] px-3.5 py-1.5 text-[13px] text-white/90 shadow-[0_8px_24px_-12px_rgb(0_0_0/0.7)] transition duration-300 ease-smooth hover:-translate-y-0.5 hover:border-accent/40 hover:text-white"
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </ViewTransition>
+        </main>
+      )}
+    </>
   );
 }
 
