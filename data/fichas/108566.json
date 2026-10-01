@@ -26,6 +26,16 @@
     }
   ],
   "costs": [],
+  "links": [
+    {
+      "id": 109390,
+      "title": "Persona Natural Sin Negocio"
+    },
+    {
+      "id": 109392,
+      "title": "Negocios o Empresas:"
+    }
+  ],
   "lastChanged": "2026-01-15",
-  "extractedAt": "2026-10-01T00:15:19.292Z"
+  "extractedAt": "2026-10-01T00:23:12.751Z"
 }

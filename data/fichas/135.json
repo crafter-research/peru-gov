@@ -28,6 +28,36 @@
     }
   ],
   "costs": [],
+  "links": [
+    {
+      "id": 193,
+      "title": "Realizar tu examen médico para obtener licencia de conducir (brevete)"
+    },
+    {
+      "id": 196,
+      "title": "Rendir examen de reglas de tránsito para obtener licencia de conducir (brevete)"
+    },
+    {
+      "id": 140,
+      "title": "Examen práctico de manejo para obtener el brevete"
+    },
+    {
+      "id": 685,
+      "title": "Solicitar la licencia en provincias"
+    },
+    {
+      "id": 136,
+      "title": "Condiciones"
+    },
+    {
+      "id": 137,
+      "title": "Licencia de conducir para adultos mayores"
+    },
+    {
+      "id": 138,
+      "title": "Programa de Formación de Conductores (Cofipro)"
+    }
+  ],
   "lastChanged": "2023-09-12",
-  "extractedAt": "2026-10-01T00:15:19.291Z"
+  "extractedAt": "2026-10-01T00:23:12.749Z"
 }

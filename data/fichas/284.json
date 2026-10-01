@@ -68,6 +68,36 @@
     }
   ],
   "costs": [],
+  "links": [
+    {
+      "id": 7015,
+      "title": "App Personas"
+    },
+    {
+      "id": 1209,
+      "title": "Régimen tributario"
+    },
+    {
+      "id": 393,
+      "title": "aquí"
+    },
+    {
+      "id": 1160,
+      "title": "pagar y presentar tus declaraciones"
+    },
+    {
+      "id": 390,
+      "title": "autorización de impresión de comprobantes de pago"
+    },
+    {
+      "id": 276,
+      "title": "aquí"
+    },
+    {
+      "id": 7550,
+      "title": "Recuperar la Clave SOL"
+    }
+  ],
   "lastChanged": "2026-07-16",
-  "extractedAt": "2026-10-01T00:15:19.290Z"
+  "extractedAt": "2026-10-01T00:23:12.748Z"
 }

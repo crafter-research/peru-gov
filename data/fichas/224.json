@@ -121,6 +121,20 @@
     "S/ 5.00",
     "S/ 33.00"
   ],
+  "links": [
+    {
+      "id": 235,
+      "title": "Documento Nacional de Identidad Electrónico (DNIe)"
+    },
+    {
+      "id": 103516,
+      "title": "sección informativa"
+    },
+    {
+      "id": 256,
+      "title": "Cambio de Lugar de Entrega de DNI"
+    }
+  ],
   "lastChanged": "2026-09-08",
-  "extractedAt": "2026-10-01T00:15:19.291Z"
+  "extractedAt": "2026-10-01T00:23:12.750Z"
 }
