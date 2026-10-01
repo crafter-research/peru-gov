@@ -110,7 +110,9 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
           No pude responder. Intenta de nuevo.
         </p>
       ) : null}
-      <div className="sticky bottom-4 mt-auto">{composer}</div>
+      <div className="sticky bottom-0 mt-auto bg-gradient-to-t from-background via-background to-transparent pt-6 pb-4">
+        {composer}
+      </div>
     </main>
   );
 }
