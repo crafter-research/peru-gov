@@ -54,6 +54,10 @@ export async function POST(req: Request) {
   const allowed = limiter(ip);
 
   const stream = createUIMessageStream<PeruMessage>({
+    onError: (error) => {
+      console.error("chat route failed", error);
+      return "No pude responder. Intenta de nuevo.";
+    },
     execute: async ({ writer }) => {
       writer.write({ type: "start" });
       if (!allowed.ok) {
