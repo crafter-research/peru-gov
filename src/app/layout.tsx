@@ -1,8 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { themeScript } from "@/components/theme-toggle";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const mono = JetBrains_Mono({
+  variable: "--font-jetbrains",
+  subsets: ["latin"],
+});
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
@@ -25,11 +30,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es-PE"
-      className={`${inter.variable} ${fraunces.variable} h-full`}
+      className={`${inter.variable} ${fraunces.variable} ${mono.variable} h-full`}
     >
+      <head>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static theme bootstrap, no user input */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-dvh flex-col font-sans">
         {children}
-        <footer className="px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-2 text-center text-[10px] text-muted-foreground/75 sm:px-6">
+        <footer className="relative z-30 px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-2 text-center text-[10px] text-muted-foreground/75 sm:px-6">
           Foto: Martin St-Amant,{" "}
           <a
             className="underline underline-offset-2 hover:text-foreground"

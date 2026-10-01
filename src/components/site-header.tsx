@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { AboutDialog } from "@/components/about-dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const REPO = "https://github.com/crafter-research/peru-gov";
 
@@ -53,9 +55,8 @@ export function SiteHeader({ onHome }: { onHome?: () => void }) {
         </Link>
       )}
       <nav className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
-        <span className="hidden rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground md:inline">
-          No oficial · no es un sitio del Estado
-        </span>
+        <AboutDialog />
+        <ThemeToggle />
         <a
           href="https://crafter.ing"
           target="_blank"
