@@ -11,7 +11,8 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "corpus:scan": "bun scripts/scan.ts",
-    "corpus:crawl": "bun scripts/crawl.ts"
+    "corpus:crawl": "bun scripts/crawl.ts",
+    "corpus:embed": "bun --env-file=.env.local scripts/embed-catalog.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.100",
