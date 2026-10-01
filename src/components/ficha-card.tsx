@@ -61,10 +61,12 @@ export function FichaCard({ ficha }: { ficha: Ficha }) {
           </details>
         ))}
       </div>
-      <p className="mt-4 text-[11px] text-muted-foreground">
-        Fuente: gob.pe/{ficha.id}
-        {ficha.lastChanged ? ` · último cambio ${ficha.lastChanged}` : ""} ·
-        extraído {ficha.extractedAt.slice(0, 10)}
+      <p className="mt-4 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[10.5px] tracking-tight text-muted-foreground/60">
+        <span>gob.pe/{ficha.id}</span>
+        {ficha.lastChanged ? (
+          <span>actualizado {ficha.lastChanged}</span>
+        ) : null}
+        <span>leído {ficha.extractedAt.slice(0, 10)}</span>
       </p>
     </article>
   );
