@@ -1,11 +1,10 @@
+import { titleFromSlug } from "@/corpus/sitemap";
+
 export type Tree = {
   parent: Record<number, number>;
   children: Record<number, number[]>;
   titles: Record<number, string>;
 };
-
-const titleOf = (slug: string) =>
-  slug.replace(/^\d+-/, "").replaceAll("-", " ");
 
 /**
  * N19: gob.pe guides publish their variants as child pages whose slug extends the parent's slug
@@ -18,7 +17,7 @@ export function buildTree(slugs: string[]): Tree {
   const tree: Tree = { parent: {}, children: {}, titles: {} };
   for (const s of slugs) {
     const id = Number(s.split("-")[0]);
-    tree.titles[id] = titleOf(s);
+    tree.titles[id] = titleFromSlug(s);
     let base = s.replace(/^\d+-/, "");
     while (base.includes("-")) {
       base = base.slice(0, base.lastIndexOf("-"));

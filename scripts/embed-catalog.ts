@@ -2,6 +2,7 @@
 import { readdir } from "node:fs/promises";
 import { embedMany } from "ai";
 import type { CorpusIndex } from "@/corpus/index-store";
+import { titleFromSlug } from "@/corpus/sitemap";
 import type { Ficha } from "@/lib/ficha";
 import { EMBED_MODEL, normalize } from "@/lib/retrieve";
 
@@ -17,9 +18,7 @@ for (const f of (await readdir("data/fichas")).filter((f) =>
 
 const live = Object.values(index.entries).filter((e) => !e.missingSince);
 const ids = live.map((e) => e.id);
-const titles = live.map(
-  (e) => official.get(e.id) ?? e.slug.replace(/^\d+-/, "").replaceAll("-", " "),
-);
+const titles = live.map((e) => official.get(e.id) ?? titleFromSlug(e.slug));
 
 let dim = 0;
 let vectors = new Float32Array(0);

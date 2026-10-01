@@ -39,3 +39,6 @@ export async function fetchGz(url: string): Promise<string> {
   if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
   return gunzipSync(Buffer.from(await res.arrayBuffer())).toString("utf8");
 }
+
+export const titleFromSlug = (slug: string) =>
+  slug.replace(/^\d+-/, "").replaceAll("-", " ");
