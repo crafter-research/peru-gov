@@ -15,18 +15,6 @@ export function FichaCard({
       </p>
       <h2 className="mt-1 font-display text-2xl">{ficha.title}</h2>
       {summary ? <p className="mt-3 leading-relaxed">{summary}</p> : null}
-      {ficha.costs.length ? (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {ficha.costs.map((c) => (
-            <span
-              key={c}
-              className="rounded-full bg-accent-soft px-3 py-1 text-sm font-medium text-accent"
-            >
-              {c}
-            </span>
-          ))}
-        </div>
-      ) : null}
       <div className="mt-4 space-y-3">
         {ficha.sections.map((s, i) => (
           <details key={`${s.heading}-${i}`} open={i < 2} className="group">
