@@ -20,7 +20,7 @@ cp .env.example .env.local   # add an AI Gateway key from the Crafter team
 bun dev
 ```
 
-Without `data/catalog.f32`, routing only considers the fichas in `data/fichas/`.
+Without `data/catalog.i8`, routing only considers the fichas in `data/fichas/`.
 
 ## Corpus
 

@@ -1,10 +1,10 @@
-// bun scripts/embed-catalog.ts — N18: data/index.json (+ extracted fichas) → data/catalog.{json,f32}
+// bun scripts/embed-catalog.ts — N18: data/index.json (+ extracted fichas) → data/catalog.{json,i8}
 import { readdir } from "node:fs/promises";
 import { embedMany } from "ai";
 import type { CorpusIndex } from "@/corpus/index-store";
 import { titleFromSlug } from "@/corpus/sitemap";
 import type { Ficha } from "@/lib/ficha";
-import { EMBED_MODEL, normalize } from "@/lib/retrieve";
+import { EMBED_MODEL, embedOptions, normalize, quantize } from "@/lib/retrieve";
 
 const BATCH = 1000;
 const index: CorpusIndex = await Bun.file("data/index.json").json();
@@ -21,18 +21,19 @@ const ids = live.map((e) => e.id);
 const titles = live.map((e) => official.get(e.id) ?? titleFromSlug(e.slug));
 
 let dim = 0;
-let vectors = new Float32Array(0);
+let vectors = new Int8Array(0);
 for (let i = 0; i < titles.length; i += BATCH) {
   const { embeddings } = await embedMany({
     model: EMBED_MODEL,
     values: titles.slice(i, i + BATCH).map(normalize),
+    providerOptions: embedOptions,
   });
   if (!dim) {
     dim = embeddings[0].length;
-    vectors = new Float32Array(titles.length * dim);
+    vectors = new Int8Array(titles.length * dim);
   }
   embeddings.forEach((e, j) => {
-    vectors.set(e, (i + j) * dim);
+    vectors.set(quantize(e), (i + j) * dim);
   });
   console.error(
     `embedded ${Math.min(i + BATCH, titles.length)}/${titles.length}`,
@@ -42,5 +43,5 @@ await Bun.write(
   "data/catalog.json",
   `${JSON.stringify({ ids, titles, dim })}\n`,
 );
-await Bun.write("data/catalog.f32", vectors);
+await Bun.write("data/catalog.i8", vectors);
 console.log(`catalog: ${ids.length} titles, dim ${dim}`);
