@@ -1,0 +1,33 @@
+{
+  "id": 135,
+  "slug": "135-obtener-licencia-de-conducir-brevete-por-primera-vez",
+  "url": "https://www.gob.pe/135-obtener-licencia-de-conducir-brevete-por-primera-vez",
+  "title": "Obtener licencia de conducir (brevete) por primera vez",
+  "kind": "Orientación",
+  "entity": "Ministerio de Transportes y Comunicaciones",
+  "sections": [
+    {
+      "heading": "",
+      "items": [
+        "Descripción",
+        "Realizar tu examen médico para obtener licencia de conducir (brevete)",
+        "Rendir examen de reglas de tránsito para obtener licencia de conducir (brevete)",
+        "Examen práctico de manejo para obtener el brevete",
+        "Solicitar la licencia en provincias",
+        "Condiciones",
+        "Licencia de conducir para adultos mayores",
+        "Programa de Formación de Conductores (Cofipro)"
+      ]
+    },
+    {
+      "heading": "Descripción",
+      "items": [
+        "La licencia de conducir es un documento necesario para la conducción de vehículos. En el Perú, todo conductor inicia con la licencia categoría A-I para la manejar automóviles particulares. Para tramitarla, primero debes aprobar el examen médico, el examen de reglas de tránsito y examen práctico de manejo.",
+        "Posteriormente, podrás solicitar subir a la categoría profesional, si cumples con nuevos requisitos."
+      ]
+    }
+  ],
+  "costs": [],
+  "lastChanged": "2023-09-12",
+  "extractedAt": "2026-10-01T00:15:19.291Z"
+}

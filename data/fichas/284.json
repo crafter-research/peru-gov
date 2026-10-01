@@ -1,0 +1,73 @@
+{
+  "id": 284,
+  "slug": "284-inscripcion-en-el-ruc",
+  "url": "https://www.gob.pe/284-inscripcion-en-el-ruc",
+  "title": "Inscripción en el RUC",
+  "kind": "Trámite",
+  "entity": "Superintendencia Nacional de Aduanas y de Administración Tributaria",
+  "sections": [
+    {
+      "heading": "",
+      "items": [
+        "Ya seas una persona natural (independiente) o una persona jurídica (empresa), aquí encontrarás información para cumplir con este trámite esencial ante la Sunat.",
+        "Conocerás cuáles son los requisitos para la inscripción, las diferentes formas de hacerlo (tanto virtual como presencial) y también cómo obtener y recuperar tu Clave SOL, la herramienta que te permitirá realizar muchos trámites en línea.",
+        "Además, recuerda que la Sunat puede inscribirte de oficio en el RUC. Revisa aquí quiénes son los nuevos obligados.",
+        "Importante:A través de los Servicios Digitales, puedes realizar trámites como inscribirte en el RUC, recuperar tu Clave SOL, actualizar tus datos de contacto, entre otros, de manera fácil y rápida. Para conocer cómo realizar estos trámites, haz clic aquí.",
+        "Inscripción en el RUC – Persona natural",
+        "Si vas a iniciar una actividad profesional u oficio de manera independiente, comenzar un negocio propio, alquilar tu casa, departamento y otros bienes, o pagar impuestos por venta de acciones, inmuebles y similares, debes inscribirte al Registro Único de Contribuyente (RUC) de la Sunat.",
+        "Ten presente que el número de RUC, de once dígitos y único, te identifica como contribuyente, seas persona jurídica o persona natural. Además, contiene los datos de identificación de tu actividad económica y es de uso obligatorio en toda declaración o trámite que realices ante la Sunat."
+      ]
+    },
+    {
+      "heading": "Requisitos",
+      "items": [
+        "Si eliges hacerlo por Sunat Virtual o el App Personas:",
+        "DNI, número de celular y correo electrónico.",
+        "Fecha de inicio de actividades económicas. Si es por la APP Personas, esta fecha será la misma que la de la inscripción.",
+        "Domicilio fiscal indicado en DNI. Si es distinta, Sunat podrá verificar posteriormente la veracidad de esta información.",
+        "Actividad económica principal en función a la lista CIIU.",
+        "Código de Profesión u oficio, si te vas a registrar como contribuyente de renta de Cuarta categoría.",
+        "Régimen tributario, si eres persona natural con negocio deberás elegir entre: el Nuevo Régimen único Simplificado - NRUS, Régimen Especial, Mype Tributario o el Régimen General. Puedes revisar también un afiche resumen de estos regímenes.",
+        "Si lo haces de modo presencial :",
+        "DNI, Carnet de Extranjería, Carnet de Identidad emitido por el Ministerio de Relaciones Exteriores, Carnet de Permiso Temporal de Permanencia o Pasaporte con calidad migratoria para la generación de renta de fuente peruana",
+        "DNI de tu representante legal, si un tutor o curador realiza el trámite.",
+        "Si un tercero realiza el trámite: carta poder con firma legalizada notarialmente o autenticada por fedatario de Sunat, con autorización expresa para realizar la inscripción en el RUC (solo presencial).",
+        "Si la dirección a registrar es distinta a la de tu DNI: cualquier documento privado (ejemplo: recibo de luz, agua u otro) o documento público (documento emitido por una institución pública) en que figure dicho domicilio fiscal.",
+        "Formulario 2119 completo (solo presencial).",
+        "Acta o Partida de matrimonio civil, solo si te vas registrar como sociedad conyugal.",
+        "Partida o acta de defunción del fallecido, si se trata de una sucesión indivisa."
+      ]
+    },
+    {
+      "heading": "Antes de iniciar, debes saber:",
+      "items": [
+        "Ten a la mano tu documento de identidad y tu teléfono móvil con la App Personas Sunat abierto. Ingresa a Sunat Virtual, digita tu número de DNI e indica para qué necesitas inscribirte en el RUC. La plataforma te guiará hasta un código QR que deberás escanear con la App Personas Sunat. En tu celular, sigue las instrucciones del app para validar tus huellas dactilares. Finalmente, declara en Sunat Virtual los datos solicitados en los requisitos de este trámite y genera tu Clave SOL. Al concluir, Sunat te enviará la constancia del trámite realizado al correo electrónico que declaraste. Ten presente que puedes hacerlo directamente desde la App Personas Sunat, accediendo a la opción 'Inscríbete en el RUC' y siguiendo las mismas instrucciones que para Sunat Virtual.",
+        "Inscríbete en el RUC vía Sunat Virtual"
+      ]
+    },
+    {
+      "heading": "Hazlo en solo 2 pasos:",
+      "items": [
+        "Acércate a cualquier Centro de Servicios al Contribuyente (CSC) más cercano a tu domicilio, o a los Centros con los requisitos necesarios.",
+        "Pide tu Código de Usuario y Clave de Acceso (Clave SOL), que te permitirá realizar diversos trámites a través de Internet, tales como pagar y presentar tus declaraciones, pedir autorización de impresión de comprobantes de pago a través de imprentas conectadas a este sistema, entre otros. Deberás descargar tu Solicitud de Clave SOL."
+      ]
+    },
+    {
+      "heading": "Inscripción en el RUC – Persona jurídica",
+      "items": [
+        "Puedes revisar la información para obtener tu RUC como Persona Jurídica aquí"
+      ]
+    },
+    {
+      "heading": "Obtener o recuperar tu Clave SOL",
+      "items": [
+        "La Clave SOL es la contraseña que te permite acceder a SUNAT Operaciones en Línea (SOL), plataforma informática donde podrás realizar consultas, trámites, transacciones y otros.",
+        "Para conocer cómo obtener tu Clave SOL ingresa aquí.",
+        "Si lo que deseas es recuperarla haz clic en el siguiente enlace Recuperar la Clave SOL."
+      ]
+    }
+  ],
+  "costs": [],
+  "lastChanged": "2026-07-16",
+  "extractedAt": "2026-10-01T00:15:19.290Z"
+}
