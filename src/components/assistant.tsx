@@ -13,6 +13,7 @@ import { Streamdown } from "streamdown";
 import { Backdrop } from "@/components/backdrop";
 import { Composer } from "@/components/composer";
 import { FichaCard } from "@/components/ficha-card";
+import { MessageActions } from "@/components/message-actions";
 import { SiteHeader } from "@/components/site-header";
 import type { PeruMessage } from "@/lib/messages";
 import { useScrollToLatestQuestion } from "@/lib/use-scroll-to-question";
@@ -25,6 +26,13 @@ const EXAMPLES = [
 ];
 
 type Ask = (text: string, hint?: number) => void;
+
+const questionBefore = (messages: PeruMessage[], index: number) =>
+  messages
+    .slice(0, index)
+    .findLast((m) => m.role === "user")
+    ?.parts.map((p) => (p.type === "text" ? p.text : ""))
+    .join("") ?? "";
 
 export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
   // Anonymous per-conversation id for routing analytics; a new chat gets a new one.
@@ -91,6 +99,7 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
                 <AssistantMessage
                   key={m.id}
                   message={m}
+                  question={questionBefore(messages, i)}
                   onAsk={ask}
                   streaming={busy && i === messages.length - 1}
                 />
@@ -184,10 +193,12 @@ type DataPart<T extends PeruMessage["parts"][number]["type"]> = Extract<
  */
 function AssistantMessage({
   message,
+  question,
   onAsk,
   streaming,
 }: {
   message: PeruMessage;
+  question: string;
   onAsk: Ask;
   streaming: boolean;
 }) {
@@ -266,6 +277,14 @@ function AssistantMessage({
         <div className="animate-in">
           <FichaCard ficha={ficha.data} />
         </div>
+      ) : null}
+
+      {ficha && settled && summary ? (
+        <MessageActions
+          question={question}
+          summary={summary}
+          ficha={ficha.data}
+        />
       ) : null}
 
       {settled && (variants || related || alternatives) ? (
