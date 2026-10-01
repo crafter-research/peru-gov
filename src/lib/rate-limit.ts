@@ -36,7 +36,8 @@ export function createDurableLimiter(
   windowMs: number,
   now: () => number = Date.now,
 ) {
-  const local = createLimiter(limit, windowMs, now);
+  // A database outage must not reopen the firehose: the in-memory fallback is stricter.
+  const local = createLimiter(Math.min(limit, 5), windowMs, now);
   return async (key: string): Promise<LimitResult> => {
     if (!sql) return local(key);
     const t = now();

@@ -5,18 +5,22 @@ import { Backdrop } from "@/components/backdrop";
 import { SiteHeader } from "@/components/site-header";
 import { getShare } from "@/lib/shares";
 
+// Shared snapshots are immutable and user-authored: cache them, never index them.
+export const revalidate = 86_400;
+
 export async function generateMetadata({
   params,
 }: PageProps<"/c/[id]">): Promise<Metadata> {
   const turns = await getShare((await params).id);
   const first = turns?.[0];
-  if (!first) return {};
+  if (!first) return { robots: { index: false, follow: false } };
   const title = `“${first.question}” · Hola, Perú`;
   return {
     title,
     description: first.ficha
       ? `${first.ficha.title} · ${first.ficha.entity}`
       : first.summary.slice(0, 160),
+    robots: { index: false, follow: false },
   };
 }
 

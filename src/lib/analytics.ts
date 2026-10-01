@@ -42,3 +42,9 @@ export async function logRouteEvent(e: RouteEvent): Promise<void> {
     console.error("analytics insert failed", err);
   }
 }
+
+/** Analytics are diagnostics, not records: old events are dropped to keep the table bounded. */
+export async function pruneRouteEvents(days = 90, now = new Date()) {
+  if (!sql) return;
+  await sql`delete from route_events where created_at < ${now.toISOString()}::timestamptz - make_interval(days => ${days})`;
+}

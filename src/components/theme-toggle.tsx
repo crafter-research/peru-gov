@@ -1,18 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { THEME_KEY } from "@/lib/theme";
 
 type Theme = "system" | "light" | "dark";
-const KEY = "peru-gov-theme";
+const KEY = THEME_KEY;
 const ORDER: Theme[] = ["system", "light", "dark"];
 const LABEL: Record<Theme, string> = {
   system: "Tema del sistema",
   light: "Tema claro",
   dark: "Tema oscuro",
 };
-
-/** Runs before paint (inlined in <head>) so a pinned theme never flashes. */
-export const themeScript = `try{var t=localStorage.getItem("${KEY}");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
 
 function apply(theme: Theme) {
   if (theme === "system") delete document.documentElement.dataset.theme;
