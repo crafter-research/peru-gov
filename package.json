@@ -22,6 +22,7 @@
     "@ai-sdk/gateway": "^4.0.100",
     "@ai-sdk/react": "^4.0.125",
     "@neondatabase/serverless": "^1.1.0",
+    "@vercel/analytics": "^2.0.1",
     "ai": "^7.0.122",
     "next": "16.3.6",
     "react": "19.2.8",

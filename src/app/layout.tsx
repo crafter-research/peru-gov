@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { themeScript } from "@/components/theme-toggle";
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </a>
           . Verifica siempre en gob.pe.
         </footer>
+        <Analytics />
       </body>
     </html>
   );
