@@ -1,18 +1,17 @@
 // bun scripts/embed-catalog.ts — N18: data/index.json (+ extracted fichas) → data/catalog.{json,i8}
-import { readdir } from "node:fs/promises";
+
 import { embedMany } from "ai";
 import type { CorpusIndex } from "@/corpus/index-store";
 import { titleFromSlug } from "@/corpus/sitemap";
 import type { Ficha } from "@/lib/ficha";
 import { EMBED_MODEL, embedOptions, normalize, quantize } from "@/lib/retrieve";
+import { fichaFiles } from "./ficha-files";
 
 const BATCH = 1000;
 const index: CorpusIndex = await Bun.file("data/index.json").json();
 const official = new Map<number, string>();
-for (const f of (await readdir("data/fichas")).filter((f) =>
-  f.endsWith(".json"),
-)) {
-  const ficha: Ficha = await Bun.file(`data/fichas/${f}`).json();
+for (const f of await fichaFiles()) {
+  const ficha: Ficha = await Bun.file(f).json();
   official.set(ficha.id, ficha.title);
 }
 

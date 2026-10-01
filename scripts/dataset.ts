@@ -1,15 +1,14 @@
 // bun scripts/dataset.ts — N22: local open-dataset snapshot (dist/dataset). Publishing is a separate, manual step.
-import { mkdir, readdir } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import type { CorpusIndex } from "@/corpus/index-store";
 import { type Ficha, fichaSchema } from "@/lib/ficha";
+import { fichaFiles } from "./ficha-files";
 
 const out = "dist/dataset";
 await mkdir(out, { recursive: true });
 const fichas: Ficha[] = [];
-for (const f of (await readdir("data/fichas")).filter((f) =>
-  f.endsWith(".json"),
-)) {
-  fichas.push(fichaSchema.parse(await Bun.file(`data/fichas/${f}`).json()));
+for (const f of await fichaFiles()) {
+  fichas.push(fichaSchema.parse(await Bun.file(f).json()));
 }
 fichas.sort((a, b) => a.id - b.id);
 const index: CorpusIndex = await Bun.file("data/index.json").json();

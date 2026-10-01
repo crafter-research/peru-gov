@@ -17,6 +17,7 @@ const queue = Object.values(index.entries)
   .filter((e) => (only ? only.includes(e.id) : needsFetch(e)))
   .slice(0, limit);
 await mkdir("data/raw", { recursive: true });
+await mkdir("data/cache/fichas", { recursive: true });
 console.error(
   `${queue.length} pages to fetch (~${Math.ceil((queue.length * DELAY_MS) / 60000)} min)`,
 );
@@ -27,7 +28,7 @@ for (const entry of queue) {
     const { ficha, html } = await fetchFicha(entry.url);
     await Bun.write(`data/raw/${ficha.slug}.html`, html);
     await Bun.write(
-      `data/fichas/${ficha.id}.json`,
+      `data/cache/fichas/${ficha.id}.json`,
       `${JSON.stringify(ficha, null, 2)}\n`,
     );
     if (ficha.id !== entry.id)
