@@ -44,3 +44,4 @@ next-env.d.ts
 # local corpus artifacts
 /data/raw/
 /data/*.f32
+/dist/

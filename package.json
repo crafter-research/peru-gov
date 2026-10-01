@@ -14,7 +14,8 @@
     "corpus:crawl": "bun scripts/crawl.ts",
     "corpus:embed": "bun --env-file=.env.local scripts/embed-catalog.ts",
     "corpus:tree": "bun scripts/build-tree.ts",
-    "eval": "bun --env-file=.env.local scripts/eval.ts"
+    "eval": "bun --env-file=.env.local scripts/eval.ts",
+    "dataset": "bun scripts/dataset.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.100",
