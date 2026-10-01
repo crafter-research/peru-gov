@@ -10,6 +10,8 @@ export type PeruMessage = UIMessage<
     route: { steps: RouteStep[] };
     ficha: Ficha;
     alternatives: { items: Candidate[] };
+    variants: { items: Candidate[] };
+    related: { items: Candidate[] };
     clarify: { options: string[] };
     none: { query: string };
     limited: { retryAfterSeconds: number };
