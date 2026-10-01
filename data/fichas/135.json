@@ -7,19 +7,6 @@
   "entity": "Ministerio de Transportes y Comunicaciones",
   "sections": [
     {
-      "heading": "",
-      "items": [
-        "Descripción",
-        "Realizar tu examen médico para obtener licencia de conducir (brevete)",
-        "Rendir examen de reglas de tránsito para obtener licencia de conducir (brevete)",
-        "Examen práctico de manejo para obtener el brevete",
-        "Solicitar la licencia en provincias",
-        "Condiciones",
-        "Licencia de conducir para adultos mayores",
-        "Programa de Formación de Conductores (Cofipro)"
-      ]
-    },
-    {
       "heading": "Descripción",
       "items": [
         "La licencia de conducir es un documento necesario para la conducción de vehículos. En el Perú, todo conductor inicia con la licencia categoría A-I para la manejar automóviles particulares. Para tramitarla, primero debes aprobar el examen médico, el examen de reglas de tránsito y examen práctico de manejo.",
@@ -59,5 +46,5 @@
     }
   ],
   "lastChanged": "2023-09-12",
-  "extractedAt": "2026-10-01T00:23:12.749Z"
+  "extractedAt": "2026-10-01T02:16:38.003Z"
 }

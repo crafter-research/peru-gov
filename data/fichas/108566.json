@@ -7,14 +7,6 @@
   "entity": "Superintendencia Nacional de Aduanas y de Administración Tributaria",
   "sections": [
     {
-      "heading": "",
-      "items": [
-        "Descripción",
-        "Declara y Paga Renta Anual 2025 – Persona Natural Sin Negocio",
-        "Declara y Paga Renta Anual 2025 - Negocios o Empresas"
-      ]
-    },
-    {
       "heading": "Descripción",
       "items": [
         "El impuesto a la renta es un tributo que se determina anualmente, donde los contribuyentes declararán sus rentas o pérdidas del 01 de enero al 31 de diciembre de 2025",
@@ -37,5 +29,5 @@
     }
   ],
   "lastChanged": "2026-01-15",
-  "extractedAt": "2026-10-01T00:23:12.751Z"
+  "extractedAt": "2026-10-01T02:16:38.005Z"
 }
