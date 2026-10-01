@@ -1,10 +1,13 @@
 import { withBotId } from "botid/next/config";
 import type { NextConfig } from "next";
 
+// No X-Frame-Options here: a `/:path*` source also covers BotID's challenge path, and
+// DENY would override the SAMEORIGIN BotID sets, breaking the challenge (every POST 403s).
+// Framing protection lives in the middleware CSP (frame-ancestors 'none'), whose matcher
+// excludes the BotID path.
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "X-Frame-Options", value: "DENY" },
   // The voice button uses the mic; nothing else needs sensors, camera or geo.
   { key: "Permissions-Policy", value: "microphone=(self)" },
 ];
