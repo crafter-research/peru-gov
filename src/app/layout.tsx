@@ -16,6 +16,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://peru-gov.crafter.ing"),
   title: "Hola, Perú",
   description:
     "Prototipo no oficial de Crafter Research: cuéntale tu situación y te lleva al trámite correcto de gob.pe.",
