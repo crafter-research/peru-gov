@@ -58,7 +58,7 @@ export function VoiceButton({ onText }: { onText: (text: string) => void }) {
       onClick={toggle}
       aria-label={listening ? "Detener dictado" : "Dictar por voz"}
       aria-pressed={listening}
-      className={`rounded-full p-2 ${listening ? "bg-accent-soft text-accent" : "text-muted hover:text-foreground"}`}
+      className={`grid size-9 place-items-center rounded-xl transition duration-200 ${listening ? "bg-accent/20 text-accent" : "text-white/60 hover:bg-white/5 hover:text-white"}`}
     >
       <svg
         width="18"
