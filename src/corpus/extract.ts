@@ -54,7 +54,12 @@ export function parseDocumentTitle(raw: string) {
   if (parts.at(-1) === "Plataforma del Estado Peruano") parts.pop();
   const entity = parts.pop() ?? "";
   const kind = parts.pop() ?? "";
-  return { kind, entity };
+  return { kind, entity, heading: parts.join(" - ") };
+}
+
+/** Variant pages repeat the guide's h1; their own name follows it in the document title. */
+export function variantTitle(h1: string, heading: string): string {
+  return heading.startsWith(`${h1} - `) ? heading.slice(h1.length + 3) : h1;
 }
 
 export function parseLastChanged(text: string): string | null {
@@ -177,7 +182,7 @@ export async function extractFicha(
   await rewriter.transform(new Response(html)).text();
   startSection("");
 
-  const { kind, entity } = parseDocumentTitle(docTitle);
+  const { kind, entity, heading } = parseDocumentTitle(docTitle);
   const kept = sections
     .filter((s) => !SKIP_HEADINGS.has(s.heading) && s.items.length)
     .map((s) => ({
@@ -192,7 +197,7 @@ export async function extractFicha(
     id,
     slug: pathname,
     url,
-    title: clean(h1),
+    title: variantTitle(clean(h1), heading),
     kind,
     entity,
     sections: kept,

@@ -32,6 +32,16 @@ describe("extractFicha", () => {
     expect(f.links.every((l) => l.id !== 224 && l.title.length > 0)).toBe(true);
   });
 
+  test("a variant page takes its own title, not the guide's h1", async () => {
+    const f = await extractFicha(
+      await fixture("137-variant"),
+      "https://www.gob.pe/137",
+    );
+    expect(f.id).toBe(137);
+    expect(f.title).toBe("Licencia de conducir para adultos mayores");
+    expect(f.kind).toBe("Orientación");
+  });
+
   test("brevete page parses", async () => {
     const f = await extractFicha(
       await fixture("135-obtener-licencia-de-conducir-brevete-por-primera-vez"),
@@ -50,6 +60,7 @@ test("parseDocumentTitle splits kind and entity", () => {
   ).toEqual({
     kind: "Trámite",
     entity: "Registro Nacional de Identificación y Estado Civil",
+    heading: "Solicitar duplicado de DNI",
   });
 });
 
