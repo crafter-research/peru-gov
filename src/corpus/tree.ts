@@ -41,3 +41,13 @@ export function variantsOf(tree: Tree, id: number): number[] {
     ? []
     : [p, ...(tree.children[p] ?? []).filter((c) => c !== id)];
 }
+
+/** A variant's own label: its title minus the parent's title prefix ("…por primera vez condiciones" → "condiciones"). */
+export function variantLabel(tree: Tree, id: number): string {
+  const title = tree.titles[id] ?? "";
+  const parent = tree.parent[id];
+  const prefix = parent === undefined ? "" : tree.titles[parent];
+  return prefix && title.startsWith(`${prefix} `)
+    ? title.slice(prefix.length + 1)
+    : title;
+}

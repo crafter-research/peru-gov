@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { type Tree, variantsOf } from "@/corpus/tree";
+import { type Tree, variantLabel, variantsOf } from "@/corpus/tree";
 import type { Ficha } from "@/lib/ficha";
 import type { RouteStep } from "@/lib/messages";
 import type { Candidate } from "@/lib/router";
@@ -39,7 +39,7 @@ export async function variantsAndRelated(
   const t = await loadTree();
   const variants = variantsOf(t, ficha.id).map((id) => ({
     id,
-    title: t.titles[id],
+    title: variantLabel(t, id),
   }));
   const seen = new Set([ficha.id, ...variants.map((v) => v.id)]);
   const related = ficha.links

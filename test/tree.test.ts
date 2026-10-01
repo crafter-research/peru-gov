@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { buildTree, variantsOf } from "@/corpus/tree";
+import { buildTree, variantLabel, variantsOf } from "@/corpus/tree";
 
 const slugs = [
   "135-obtener-licencia-de-conducir-brevete-por-primera-vez",
@@ -21,4 +21,15 @@ test("variants are children, or siblings plus parent for a variant", () => {
   expect(variantsOf(t, 135)).toEqual([136, 137]);
   expect(variantsOf(t, 136)).toEqual([135, 137]);
   expect(variantsOf(t, 224)).toEqual([]);
+});
+
+test("variant labels drop the parent's title", () => {
+  const t = buildTree(slugs);
+  expect(variantLabel(t, 136)).toBe("condiciones");
+  expect(variantLabel(t, 137)).toBe(
+    "licencia de conducir para adultos mayores",
+  );
+  expect(variantLabel(t, 135)).toBe(
+    "obtener licencia de conducir brevete por primera vez",
+  );
 });
