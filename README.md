@@ -42,3 +42,7 @@ bun eval   # held-out routing eval; fails below the measured baseline (39/46)
 ```
 
 Scripts unset any inherited `AI_GATEWAY_API_KEY` so `.env.local` (the Crafter key) always wins; a key exported in your shell would otherwise take precedence and bill another team.
+
+## License
+
+Code: MIT (`LICENSE`). Content from gob.pe and the backdrop photo keep their own terms; see `NOTICE.md`.
