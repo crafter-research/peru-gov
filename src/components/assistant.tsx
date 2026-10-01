@@ -15,6 +15,7 @@ import { Composer } from "@/components/composer";
 import { FichaCard } from "@/components/ficha-card";
 import { SiteHeader } from "@/components/site-header";
 import type { PeruMessage } from "@/lib/messages";
+import { useStickToBottom } from "@/lib/use-stick-to-bottom";
 
 const EXAMPLES = [
   "Me robaron el DNI",
@@ -33,11 +34,13 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
   const busy = status === "submitted" || status === "streaming";
   const [started, setStarted] = useState(false);
   const chatting = started || messages.length > 0;
-  const end = useRef<HTMLDivElement>(null);
+  const thread = useRef<HTMLDivElement>(null);
+  const follow = useStickToBottom(thread, chatting);
 
   const ask: Ask = (text, hint) => {
     if (!text.trim() || busy) return;
     if (!chatting) startTransition(() => setStarted(true));
+    follow();
     sendMessage({ text }, hint ? { body: { hint } } : undefined);
   };
 
@@ -58,19 +61,13 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
     }
   }, [initialQuestion, sendMessage]);
 
-  const count = messages.length;
-  useEffect(() => {
-    if (count)
-      end.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [count]);
-
   return (
     <>
       <SiteHeader onHome={newChat} />
       <Backdrop focused={chatting} />
       {chatting ? (
         <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col px-4">
-          <div className="flex flex-1 flex-col gap-8 py-6">
+          <div ref={thread} className="flex flex-1 flex-col gap-8 py-6">
             {messages.map((m, i) =>
               m.role === "user" ? (
                 <p
@@ -96,7 +93,6 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
                 No pude responder. Intenta de nuevo.
               </p>
             ) : null}
-            <div ref={end} />
           </div>
           <div
             aria-hidden
@@ -167,6 +163,15 @@ function Thinking() {
   );
 }
 
+type DataPart<T extends PeruMessage["parts"][number]["type"]> = Extract<
+  PeruMessage["parts"][number],
+  { type: T }
+>;
+
+/**
+ * Reading order: where we routed → the streamed answer → the official ficha → next steps.
+ * The ficha and chips wait for the answer to finish so static content never jumps under live text.
+ */
 function AssistantMessage({
   message,
   onAsk,
@@ -176,134 +181,152 @@ function AssistantMessage({
   onAsk: Ask;
   streaming: boolean;
 }) {
+  const find = <T extends PeruMessage["parts"][number]["type"]>(type: T) =>
+    message.parts.find((p) => p.type === type) as DataPart<T> | undefined;
   const summary = message.parts
     .flatMap((p) => (p.type === "text" ? [p.text] : []))
     .join("");
-  const rendered = (
-    <Streamdown
-      animated
-      isAnimating={streaming}
-      className="typeset text-[15px] text-foreground"
-    >
-      {summary}
-    </Streamdown>
-  );
+  const route = find("data-route");
+  const ficha = find("data-ficha");
+  const variants = find("data-variants");
+  const related = find("data-related");
+  const alternatives = find("data-alternatives");
+  const clarify = find("data-clarify");
+  const none = find("data-none");
+  const limited = find("data-limited");
+  const settled = !streaming;
+
   return (
-    <div className="flex flex-col gap-3 animate-in">
-      {message.parts.map((part, i) => {
-        const key = `${message.id}-${i}`;
-        switch (part.type) {
-          case "data-route":
-            return (
-              <ol
-                key={key}
-                className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground"
+    <div className="flex flex-col gap-4">
+      {route ? (
+        <ol className="animate-in flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          {route.data.steps.map((s, j) => (
+            <li
+              key={`${s.label}-${s.value}`}
+              className="flex items-center gap-1.5"
+            >
+              {j > 0 ? (
+                <span aria-hidden className="text-muted-foreground/50">
+                  /
+                </span>
+              ) : null}
+              <span
+                className={
+                  j === route.data.steps.length - 1
+                    ? "text-foreground"
+                    : undefined
+                }
               >
-                {part.data.steps.map((s, j) => (
-                  <li
-                    key={`${s.label}-${s.value}`}
-                    className="flex items-center gap-1.5"
-                  >
-                    {j > 0 ? (
-                      <span aria-hidden className="text-muted-foreground/75">
-                        /
-                      </span>
-                    ) : null}
-                    <span
-                      className={
-                        j === part.data.steps.length - 1
-                          ? "text-foreground"
-                          : undefined
-                      }
-                    >
-                      {s.value}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            );
-          case "data-ficha":
-            return (
-              <FichaCard
-                key={key}
-                ficha={part.data}
-                summary={summary ? rendered : undefined}
-              />
-            );
-          case "data-variants":
-            return (
-              <ChipRow
-                key={key}
-                label="Otras variantes"
-                items={part.data.items}
-                onAsk={onAsk}
-              />
-            );
-          case "data-related":
-            return (
-              <ChipRow
-                key={key}
-                label="También te puede servir"
-                items={part.data.items}
-                onAsk={onAsk}
-              />
-            );
-          case "data-alternatives":
-            return (
-              <ChipRow
-                key={key}
-                label="¿Buscabas otra cosa?"
-                items={part.data.items}
-                onAsk={onAsk}
-              />
-            );
-          case "data-clarify":
-            return (
-              <div key={key} className="glass glass-border rounded-3xl p-5">
-                <p className="font-display text-xl">
-                  ¿Cuál de estos trámites necesitas?
-                </p>
-                <div className="mt-4 flex flex-col gap-2">
-                  {part.data.options.map((o) => (
-                    <button
-                      key={o}
-                      type="button"
-                      onClick={() => onAsk(o)}
-                      className="rounded-2xl bg-foreground/5 px-4 py-3 text-left text-[15px] transition duration-300 ease-smooth hover:bg-foreground/10"
-                    >
-                      {o}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          case "data-none":
-            return (
-              <div key={key} className="glass rounded-3xl p-5">
-                <p className="text-[15px]">
-                  No encontré ese trámite en el catálogo de gob.pe.
-                </p>
-                <a
-                  className="mt-3 inline-flex text-sm text-accent underline underline-offset-4"
-                  href={`https://www.gob.pe/busquedas?term=${encodeURIComponent(part.data.query)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Buscar directamente en gob.pe
-                </a>
-              </div>
-            );
-          case "data-limited":
-            return (
-              <p key={key} className="glass rounded-3xl p-4 text-sm">
-                Hiciste muchas preguntas seguidas. Intenta de nuevo en{" "}
-                {Math.ceil(part.data.retryAfterSeconds / 60)} min.
-              </p>
-            );
-          default:
-            return null;
-        }
-      })}
+                {s.value}
+              </span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+
+      {ficha ? (
+        <div className="animate-in">
+          {summary ? (
+            <Streamdown
+              animated
+              isAnimating={streaming}
+              className="typeset text-[16px] text-foreground"
+            >
+              {summary}
+            </Streamdown>
+          ) : (
+            <AnswerSkeleton />
+          )}
+        </div>
+      ) : null}
+
+      {ficha && settled ? (
+        <div className="animate-in">
+          <FichaCard ficha={ficha.data} />
+        </div>
+      ) : null}
+
+      {settled && (variants || related || alternatives) ? (
+        <div className="animate-in flex flex-col gap-4 [animation-delay:120ms]">
+          {variants ? (
+            <ChipRow
+              label="Otras variantes de este trámite"
+              items={variants.data.items}
+              onAsk={onAsk}
+            />
+          ) : null}
+          {related ? (
+            <ChipRow
+              label="También te puede servir"
+              items={related.data.items}
+              onAsk={onAsk}
+            />
+          ) : null}
+          {alternatives ? (
+            <ChipRow
+              label="¿Buscabas otra cosa?"
+              items={alternatives.data.items}
+              onAsk={onAsk}
+            />
+          ) : null}
+        </div>
+      ) : null}
+
+      {clarify ? (
+        <div className="animate-in glass glass-solid glass-border rounded-3xl p-5">
+          <p className="font-display text-xl">
+            ¿Cuál de estos trámites necesitas?
+          </p>
+          <div className="mt-4 flex flex-col gap-2">
+            {clarify.data.options.map((o) => (
+              <button
+                key={o}
+                type="button"
+                onClick={() => onAsk(o)}
+                className="rounded-2xl bg-foreground/5 px-4 py-3 text-left text-[15px] transition duration-300 ease-smooth hover:bg-foreground/10"
+              >
+                {o}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {none ? (
+        <div className="animate-in glass glass-solid rounded-3xl p-5">
+          <p className="text-[15px]">
+            No encontré ese trámite en el catálogo de gob.pe.
+          </p>
+          <a
+            className="mt-3 inline-flex text-sm text-accent underline underline-offset-4"
+            href={`https://www.gob.pe/busquedas?term=${encodeURIComponent(none.data.query)}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Buscar directamente en gob.pe
+          </a>
+        </div>
+      ) : null}
+
+      {limited ? (
+        <p className="animate-in glass glass-solid rounded-3xl p-4 text-sm">
+          Hiciste muchas preguntas seguidas. Intenta de nuevo en{" "}
+          {Math.ceil(limited.data.retryAfterSeconds / 60)} min.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function AnswerSkeleton() {
+  return (
+    <div className="flex flex-col gap-2.5" aria-hidden>
+      {["w-11/12", "w-10/12", "w-7/12"].map((w) => (
+        <div
+          key={w}
+          className={`h-3.5 ${w} animate-pulse rounded-full bg-foreground/10`}
+        />
+      ))}
     </div>
   );
 }
