@@ -2,32 +2,47 @@
 @import "streamdown/styles.css";
 @source "../../node_modules/streamdown/dist/*.js";
 
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(
+        :root:not([data-theme="light"]),
+        :root:not([data-theme="light"]) *
+      ) {
+      @slot;
+    }
+  }
+}
+
 /* Light and dark follow the system. Surfaces sit on a photographic backdrop in both. */
 :root {
   color-scheme: light dark;
-  --background: oklch(0.96 0.008 140);
-  --foreground: oklch(0.2 0.015 150);
-  --surface: oklch(0.995 0.003 140);
+  --background: oklch(0.972 0.012 85);
+  --foreground: oklch(0.22 0.02 60);
+  --surface: oklch(0.995 0.005 85);
   --card: var(--surface);
   --card-foreground: var(--foreground);
-  --muted: oklch(0.93 0.008 140);
-  --muted-foreground: oklch(0.45 0.015 150);
-  --border: oklch(0.2 0.02 150 / 0.12);
+  --muted: oklch(0.94 0.012 85);
+  --muted-foreground: oklch(0.42 0.02 60);
+  --border: oklch(0.3 0.03 60 / 0.14);
   --input: oklch(0.2 0.02 150 / 0.14);
   --primary: oklch(0.2 0.015 150);
   --primary-foreground: oklch(0.98 0.005 140);
-  --accent: oklch(0.5 0.13 150);
+  --accent: oklch(0.46 0.12 150);
   --glass: oklch(1 0 0 / 0.72);
   --glass-strong: var(--surface);
-  --overlay-top: oklch(1 0 0 / 0.35);
-  --overlay-mid: oklch(1 0 0 / 0.1);
-  --overlay-bottom: oklch(1 0 0 / 0.55);
-  --border-glow: oklch(0.55 0.14 150 / 0.55);
+  --overlay-top: oklch(1 0 0 / 0);
+  --overlay-mid: oklch(0.972 0.012 85 / 0);
+  --overlay-bottom: oklch(0.972 0.012 85 / 0.92);
+  --border-glow: oklch(0.5 0.12 150 / 0.45);
   --radius: 0.75rem;
 }
 
+/* Theme: system by default; data-theme on <html> pins light or dark. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --background: oklch(0.16 0.01 150);
     --foreground: oklch(0.97 0.005 100);
     --surface: oklch(0.15 0.012 150);
@@ -46,6 +61,32 @@
   }
 }
 
+:root[data-theme="dark"] {
+  --background: oklch(0.16 0.01 150);
+  --foreground: oklch(0.97 0.005 100);
+  --surface: oklch(0.15 0.012 150);
+  --muted: oklch(0.28 0.01 150 / 0.6);
+  --muted-foreground: oklch(0.78 0.01 120);
+  --border: oklch(1 0 0 / 0.1);
+  --input: oklch(1 0 0 / 0.12);
+  --primary: oklch(0.97 0.005 100);
+  --primary-foreground: oklch(0.18 0.01 150);
+  --accent: oklch(0.82 0.11 145);
+  --glass: oklch(0.17 0.012 150 / 0.68);
+  --overlay-top: oklch(0 0 0 / 0.4);
+  --overlay-mid: oklch(0 0 0 / 0.1);
+  --overlay-bottom: oklch(0 0 0 / 0.7);
+  --border-glow: oklch(0.82 0.16 145 / 0.85);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -59,6 +100,7 @@
   --color-surface: var(--surface);
   --font-sans: var(--font-inter);
   --font-display: var(--font-fraunces);
+  --font-mono: var(--font-jetbrains);
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
