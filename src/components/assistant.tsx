@@ -142,24 +142,32 @@ function AssistantMessage({
             );
           case "data-ficha":
             return <FichaCard key={key} ficha={part.data} summary={summary} />;
+          case "data-variants":
+            return (
+              <ChipRow
+                key={key}
+                label="Otras variantes"
+                items={part.data.items}
+                onAsk={onAsk}
+              />
+            );
+          case "data-related":
+            return (
+              <ChipRow
+                key={key}
+                label="También te puede servir"
+                items={part.data.items}
+                onAsk={onAsk}
+              />
+            );
           case "data-alternatives":
             return (
-              <div
+              <ChipRow
                 key={key}
-                className="flex flex-wrap items-center gap-2 text-sm"
-              >
-                <span className="text-muted">¿Buscabas otra cosa?</span>
-                {part.data.items.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => onAsk(c.title, c.id)}
-                    className="rounded-full border border-border bg-surface px-3 py-1 hover:border-accent"
-                  >
-                    {c.title}
-                  </button>
-                ))}
-              </div>
+                label="¿Buscabas otra cosa?"
+                items={part.data.items}
+                onAsk={onAsk}
+              />
             );
           case "data-clarify":
             return (
@@ -205,6 +213,32 @@ function AssistantMessage({
             return null;
         }
       })}
+    </div>
+  );
+}
+
+function ChipRow({
+  label,
+  items,
+  onAsk,
+}: {
+  label: string;
+  items: { id: number; title: string }[];
+  onAsk: (text: string, hint?: number) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-sm">
+      <span className="text-muted">{label}</span>
+      {items.map((c) => (
+        <button
+          key={c.id}
+          type="button"
+          onClick={() => onAsk(c.title, c.id)}
+          className="rounded-full border border-border bg-surface px-3 py-1 first-letter:uppercase hover:border-accent"
+        >
+          {c.title}
+        </button>
+      ))}
     </div>
   );
 }
