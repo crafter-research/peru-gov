@@ -11,7 +11,8 @@ import { logRouteEvent, type RouteEvent } from "@/lib/analytics";
 import { allFichas, loadOrFetchFicha } from "@/lib/fichas";
 import type { ChatBody, PeruMessage } from "@/lib/messages";
 import { needsDistrict } from "@/lib/municipal";
-import { createLimiter } from "@/lib/rate-limit";
+import { createDurableLimiter, pruneRateLimits } from "@/lib/rate-limit";
+import { clientKey, isBot, MAX_MESSAGES, readJson } from "@/lib/request-guard";
 import { retrieve } from "@/lib/retrieve";
 import { rewrite } from "@/lib/rewrite";
 import { type Candidate, jevPick, route } from "@/lib/router";
@@ -19,7 +20,8 @@ import { pathFor, variantCandidates, variantsAndRelated } from "@/lib/tree";
 
 export const maxDuration = 30;
 
-const limiter = createLimiter(20, 10 * 60_000);
+const WINDOW_MS = 10 * 60_000;
+const limiter = createDurableLimiter("chat", 20, WINDOW_MS);
 
 const ANSWER_INSTRUCTIONS =
   "Eres un asistente no oficial que explica trámites del Estado peruano. Responde en 2 o 3 oraciones, en español claro, usando SOLO la ficha oficial dada. No menciones requisitos, costos ni plazos que no estén en la ficha. No inventes. Los detalles se muestran aparte; no los repitas en lista.";
@@ -61,17 +63,38 @@ function lastUserText(messages: PeruMessage[]): string {
 }
 
 export async function POST(req: Request) {
-  const {
-    messages,
-    hint,
-    sessionId,
-  }: { messages: PeruMessage[]; sessionId?: string } & ChatBody =
-    await req.json();
+  if (await isBot())
+    return Response.json({ error: "forbidden" }, { status: 403 });
+  const body = (await readJson(req)) as
+    | ({ messages?: PeruMessage[]; sessionId?: string } & ChatBody)
+    | null;
+  if (
+    !body ||
+    !Array.isArray(body.messages) ||
+    body.messages.length > MAX_MESSAGES
+  )
+    return Response.json({ error: "too large" }, { status: 413 });
+  const { messages, hint, sessionId } = body as {
+    messages: PeruMessage[];
+    sessionId?: string;
+  } & ChatBody;
   const started = Date.now();
   const question = lastUserText(messages).slice(0, 500);
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "local";
-  const allowed = limiter(ip);
+  const { ip, key } = clientKey(req);
+  const allowed = await limiter(key);
+  if (!allowed.ok) {
+    const stream = createUIMessageStream<PeruMessage>({
+      execute: ({ writer }) => {
+        writer.write({ type: "start" });
+        writer.write({
+          type: "data-limited",
+          data: { retryAfterSeconds: allowed.retryAfterSeconds },
+        });
+      },
+    });
+    return createUIMessageStreamResponse({ stream });
+  }
+  if (Math.random() < 0.01) after(() => pruneRateLimits(WINDOW_MS));
   const event: RouteEvent = {
     sessionId: sessionId ?? "anon",
     turn: messages.filter((m) => m.role === "user").length,
@@ -96,14 +119,6 @@ export async function POST(req: Request) {
     },
     execute: async ({ writer }) => {
       writer.write({ type: "start" });
-      if (!allowed.ok) {
-        event.kind = "limited";
-        writer.write({
-          type: "data-limited",
-          data: { retryAfterSeconds: allowed.retryAfterSeconds },
-        });
-        return;
-      }
       const topic = previousFicha(messages);
       event.topicId = topic?.id;
       const withVariants = async (q: string, rewrites: string[]) => {

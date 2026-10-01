@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { createLimiter } from "@/lib/rate-limit";
+import { createDurableLimiter, createLimiter } from "@/lib/rate-limit";
 
 test("blocks after the limit and resets with the window", () => {
   let t = 0;
@@ -10,4 +10,13 @@ test("blocks after the limit and resets with the window", () => {
   expect(limit("other").ok).toBe(true);
   t = 60_000;
   expect(limit("ip").ok).toBe(true);
+});
+
+test("durable limiter falls back to memory without a database", async () => {
+  let t = 0;
+  const limit = createDurableLimiter("t", 1, 60_000, () => t);
+  expect((await limit("ip")).ok).toBe(true);
+  expect(await limit("ip")).toEqual({ ok: false, retryAfterSeconds: 60 });
+  t = 60_000;
+  expect((await limit("ip")).ok).toBe(true);
 });
