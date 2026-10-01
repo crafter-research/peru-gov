@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { FichaCard } from "@/components/ficha-card";
 import type { PeruMessage } from "@/lib/messages";
 
@@ -13,7 +13,7 @@ const EXAMPLES = [
   "Quiero sacar mi brevete",
 ];
 
-export function Assistant() {
+export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
   const { messages, sendMessage, status, error } = useChat<PeruMessage>({
     transport: new DefaultChatTransport({ api: "/api/chat" }),
   });
@@ -25,6 +25,14 @@ export function Assistant() {
     sendMessage({ text }, hint ? { body: { hint } } : undefined);
     setInput("");
   };
+  const asked = useRef(false);
+  useEffect(() => {
+    if (initialQuestion && !asked.current) {
+      asked.current = true;
+      sendMessage({ text: initialQuestion });
+    }
+  }, [initialQuestion, sendMessage]);
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     ask(input);
