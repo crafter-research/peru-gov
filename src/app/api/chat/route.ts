@@ -12,7 +12,7 @@ import { createLimiter } from "@/lib/rate-limit";
 import { retrieve } from "@/lib/retrieve";
 import { rewrite } from "@/lib/rewrite";
 import { type Candidate, jevPick, route } from "@/lib/router";
-import { pathFor, variantsAndRelated } from "@/lib/tree";
+import { pathFor, variantCandidates, variantsAndRelated } from "@/lib/tree";
 
 export const maxDuration = 30;
 
@@ -36,10 +36,13 @@ async function candidates(
 }
 
 /** The ficha the user was last shown, so follow-ups like "¿y si soy menor?" stay on topic. */
-function previousFicha(messages: PeruMessage[]): string | undefined {
+function previousFicha(
+  messages: PeruMessage[],
+): { id: number; title: string } | undefined {
   for (const m of [...messages].reverse()) {
     const part = m.parts.find((p) => p.type === "data-ficha");
-    if (part?.type === "data-ficha") return part.data.title;
+    if (part?.type === "data-ficha")
+      return { id: part.data.id, title: part.data.title };
   }
   return undefined;
 }
@@ -77,12 +80,20 @@ export async function POST(req: Request) {
         return;
       }
       const topic = previousFicha(messages);
+      const withVariants = async (q: string, rewrites: string[]) => {
+        const found = await candidates(q, rewrites);
+        if (!topic) return found;
+        const extra = (await variantCandidates(topic.id)).filter(
+          (v) => !found.some((f) => f.id === v.id),
+        );
+        return [...extra, ...found].slice(0, 30);
+      };
       const routed = topic
-        ? `Contexto: la persona venía consultando "${topic}". Ahora pregunta: ${question}`
+        ? `Contexto: la persona venía consultando "${topic.title}". Ahora pregunta: ${question}`
         : question;
       const result = await route(
         routed,
-        { rewrite, candidates, pick: jevPick },
+        { rewrite, candidates: withVariants, pick: jevPick },
         hint,
       );
 
