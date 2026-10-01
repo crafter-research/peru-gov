@@ -1,5 +1,6 @@
 import { gateway } from "@ai-sdk/gateway";
 import { experimental_evaluate as evaluate } from "ai";
+import { normalize } from "@/lib/retrieve";
 
 export type Candidate = { id: number; title: string };
 
@@ -45,12 +46,17 @@ export function decide(
   rewrites: string[],
   candidates: Candidate[],
 ): RouteResult {
-  if (picked !== null)
-    return {
-      kind: "leaf",
-      id: picked,
-      alternatives: candidates.filter((c) => c.id !== picked),
-    };
+  if (picked !== null) {
+    const pickedKey = candidates.find((c) => c.id === picked);
+    const seen = new Set(pickedKey ? [normalize(pickedKey.title)] : []);
+    const alternatives = candidates.filter((c) => {
+      const key = normalize(c.title);
+      if (c.id === picked || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    return { kind: "leaf", id: picked, alternatives };
+  }
   return rewrites.length
     ? { kind: "ask", options: rewrites }
     : { kind: "none" };

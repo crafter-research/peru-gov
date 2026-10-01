@@ -19,6 +19,18 @@ describe("decide", () => {
       alternatives: [cands[1]],
     });
   });
+  test("alternatives drop titles that repeat (consulate copies)", () => {
+    const dup = [
+      ...cands,
+      { id: 9, title: "Obtener pasaporte electrónico" },
+      { id: 10, title: "Solicitar duplicado de DNI" },
+    ];
+    expect(decide(224, [], dup)).toEqual({
+      kind: "leaf",
+      id: 224,
+      alternatives: [cands[1]],
+    });
+  });
   test("none with rewrites asks", () => {
     expect(decide(null, ["Renovar DNI", "Duplicado de DNI"], cands)).toEqual({
       kind: "ask",
