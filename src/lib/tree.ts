@@ -53,3 +53,12 @@ export async function variantsAndRelated(
     .slice(0, 4);
   return { variants: variants.slice(0, 6), related };
 }
+
+/** Follow-up candidates: the previous ficha's gob.pe variants, titled in full so Jev can tell them apart. */
+export async function variantCandidates(id: number): Promise<Candidate[]> {
+  const t = await loadTree();
+  return variantsOf(t, id).map((v) => ({
+    id: v,
+    title: capitalize(t.titles[v] ?? ""),
+  }));
+}
