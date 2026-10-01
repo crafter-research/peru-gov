@@ -3,6 +3,7 @@ import path from "node:path";
 import { type Tree, variantLabel, variantsOf } from "@/corpus/tree";
 import type { Ficha } from "@/lib/ficha";
 import type { RouteStep } from "@/lib/messages";
+import { normalize } from "@/lib/retrieve";
 import type { Candidate } from "@/lib/router";
 
 let tree: Tree | null = null;
@@ -39,10 +40,13 @@ export async function variantsAndRelated(
   ficha: Ficha,
 ): Promise<{ variants: Candidate[]; related: Candidate[] }> {
   const t = await loadTree();
-  const variants = variantsOf(t, ficha.id).map((id) => ({
-    id,
-    title: variantLabel(t, id),
-  }));
+  const labels = new Set<string>();
+  const variants = variantsOf(t, ficha.id)
+    .map((id) => ({ id, title: variantLabel(t, id) }))
+    // Consulates republish the same variant; keep one per label.
+    .filter(
+      (v) => !labels.has(normalize(v.title)) && labels.add(normalize(v.title)),
+    );
   const seen = new Set([ficha.id, ...variants.map((v) => v.id)]);
   const related = ficha.links
     .filter((l) => !seen.has(l.id) && l.title.split(" ").length > 2)
