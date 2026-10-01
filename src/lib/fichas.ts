@@ -1,0 +1,22 @@
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
+import { type Ficha, fichaSchema } from "@/lib/ficha";
+
+const DIR = path.join(process.cwd(), "data", "fichas");
+let cache: Map<number, Ficha> | null = null;
+
+export async function allFichas(): Promise<Map<number, Ficha>> {
+  if (cache) return cache;
+  const files = (await readdir(DIR)).filter((f) => f.endsWith(".json"));
+  const fichas = await Promise.all(
+    files.map(async (f) =>
+      fichaSchema.parse(JSON.parse(await readFile(path.join(DIR, f), "utf8"))),
+    ),
+  );
+  cache = new Map(fichas.map((f) => [f.id, f]));
+  return cache;
+}
+
+export async function loadFicha(id: number): Promise<Ficha | undefined> {
+  return (await allFichas()).get(id);
+}
