@@ -17,13 +17,10 @@ export function Composer({
   onSubmit,
   busy,
   placeholder,
-  solid = false,
 }: {
   onSubmit: (text: string) => void;
   busy: boolean;
   placeholder: string;
-  /** Opaque glass for the sticky composer that floats over conversation text. */
-  solid?: boolean;
 }) {
   const [value, setValue] = useState("");
   const inner = useRef<HTMLDivElement>(null);
@@ -53,7 +50,7 @@ export function Composer({
   return (
     <form
       onSubmit={send}
-      className={`glass glass-border w-full overflow-hidden rounded-[26px] transition-[height] duration-[800ms] ease-smooth ${solid ? "glass-solid" : ""}`}
+      className="glass glass-solid glass-border w-full overflow-hidden rounded-[26px] transition-[height] duration-[800ms] ease-smooth"
       style={{ height }}
     >
       <div ref={inner} className="flex flex-col gap-2 p-3 pl-4">
