@@ -15,7 +15,7 @@ import { Composer } from "@/components/composer";
 import { FichaCard } from "@/components/ficha-card";
 import { SiteHeader } from "@/components/site-header";
 import type { PeruMessage } from "@/lib/messages";
-import { useStickToBottom } from "@/lib/use-stick-to-bottom";
+import { useScrollToLatestQuestion } from "@/lib/use-scroll-to-question";
 
 const EXAMPLES = [
   "Me robaron el DNI",
@@ -35,12 +35,14 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
   const [started, setStarted] = useState(false);
   const chatting = started || messages.length > 0;
   const thread = useRef<HTMLDivElement>(null);
-  const follow = useStickToBottom(thread, chatting);
+  useScrollToLatestQuestion(
+    thread,
+    messages.filter((m) => m.role === "user").length,
+  );
 
   const ask: Ask = (text, hint) => {
     if (!text.trim() || busy) return;
     if (!chatting) startTransition(() => setStarted(true));
-    follow();
     sendMessage({ text }, hint ? { body: { hint } } : undefined);
   };
 
@@ -72,6 +74,7 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
               m.role === "user" ? (
                 <p
                   key={m.id}
+                  data-question
                   className="glass glass-solid animate-in max-w-[85%] self-end rounded-3xl rounded-br-lg px-4 py-2.5 text-[15px]"
                 >
                   {m.parts
@@ -93,10 +96,11 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
                 No pude responder. Intenta de nuevo.
               </p>
             ) : null}
+            <div aria-hidden className="h-[30dvh] shrink-0" />
           </div>
           <div
             aria-hidden
-            className="pointer-events-none fixed inset-x-0 bottom-0 z-10 h-44 bg-gradient-to-t from-background via-background/60 to-transparent"
+            className="pointer-events-none fixed inset-x-0 bottom-0 z-10 h-36 bg-gradient-to-t from-background via-background/60 to-transparent"
           />
           <div className="sticky bottom-0 z-20 pt-4 pb-3">
             <ViewTransition name="composer">
@@ -114,7 +118,7 @@ export function Assistant({ initialQuestion }: { initialQuestion?: string }) {
             <div className="relative text-center">
               <div
                 aria-hidden
-                className="absolute -inset-x-24 -inset-y-16 -z-10 bg-background/25 backdrop-blur-xl [mask-image:radial-gradient(closest-side,#000_45%,transparent)]"
+                className="absolute -inset-x-24 -inset-y-16 -z-10 bg-background/45 backdrop-blur-xl dark:bg-background/25 [mask-image:radial-gradient(closest-side,#000_45%,transparent)]"
               />
               <h1 className="font-display text-[clamp(3rem,11vw,5.5rem)] leading-[0.95] font-normal tracking-[-0.02em] text-foreground">
                 Hola, <em className="font-light italic">Perú</em>
@@ -247,29 +251,14 @@ function AssistantMessage({
       ) : null}
 
       {settled && (variants || related || alternatives) ? (
-        <div className="animate-in flex flex-col gap-4 [animation-delay:120ms]">
-          {variants ? (
-            <ChipRow
-              label="Otras variantes de este trámite"
-              items={variants.data.items}
-              onAsk={onAsk}
-            />
-          ) : null}
-          {related ? (
-            <ChipRow
-              label="También te puede servir"
-              items={related.data.items}
-              onAsk={onAsk}
-            />
-          ) : null}
-          {alternatives ? (
-            <ChipRow
-              label="¿Buscabas otra cosa?"
-              items={alternatives.data.items}
-              onAsk={onAsk}
-            />
-          ) : null}
-        </div>
+        <NextSteps
+          steps={[
+            ...(variants?.data.items ?? []),
+            ...(related?.data.items ?? []),
+          ]}
+          alternatives={alternatives?.data.items ?? []}
+          onAsk={onAsk}
+        />
       ) : null}
 
       {clarify ? (
@@ -331,30 +320,66 @@ function AnswerSkeleton() {
   );
 }
 
-function ChipRow({
-  label,
-  items,
+type Item = { id: number; title: string };
+
+/** One horizontal row of next steps; alternatives stay folded so the answer keeps the stage. */
+function NextSteps({
+  steps,
+  alternatives,
   onAsk,
 }: {
-  label: string;
-  items: { id: number; title: string }[];
+  steps: Item[];
+  alternatives: Item[];
   onAsk: Ask;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <div className="flex flex-wrap gap-2">
-        {items.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            onClick={() => onAsk(c.title, c.id)}
-            className="glass rounded-full px-3.5 py-1.5 text-left text-[13px] text-foreground transition duration-300 ease-smooth first-letter:uppercase hover:-translate-y-0.5 hover:text-foreground"
-          >
-            {c.title}
-          </button>
-        ))}
-      </div>
+    <div className="animate-in flex flex-col gap-2 [animation-delay:120ms]">
+      {steps.length ? (
+        <div className="flex snap-x gap-2 overflow-x-auto pr-8 pb-1 [mask-image:linear-gradient(to_right,#000_85%,transparent)] [scrollbar-width:none]">
+          {steps.map((c) => (
+            <Chip key={c.id} item={c} onAsk={onAsk} />
+          ))}
+        </div>
+      ) : null}
+      {alternatives.length ? (
+        <details className="group">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs text-muted-foreground transition hover:text-foreground [&::-webkit-details-marker]:hidden">
+            ¿Buscabas otra cosa?{" "}
+            <span className="text-muted-foreground/60">
+              ({alternatives.length})
+            </span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+              className="transition-transform duration-300 group-open:rotate-180"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </summary>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {alternatives.map((c) => (
+              <Chip key={c.id} item={c} onAsk={onAsk} />
+            ))}
+          </div>
+        </details>
+      ) : null}
     </div>
+  );
+}
+
+function Chip({ item, onAsk }: { item: Item; onAsk: Ask }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onAsk(item.title, item.id)}
+      className="shrink-0 snap-start rounded-full border border-border bg-surface px-3 py-1.5 text-left text-[13px] text-foreground/90 transition duration-300 ease-smooth first-letter:uppercase hover:-translate-y-0.5 hover:border-accent/40 hover:text-foreground"
+    >
+      {item.title}
+    </button>
   );
 }
