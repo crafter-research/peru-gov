@@ -1,11 +1,14 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
 import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   streamText,
   toUIMessageStream,
 } from "ai";
-import { allFichas, loadFicha } from "@/lib/fichas";
+import { allFichas, loadOrFetchFicha } from "@/lib/fichas";
 import type { ChatBody, PeruMessage } from "@/lib/messages";
+import { retrieve } from "@/lib/retrieve";
 import { rewrite } from "@/lib/rewrite";
 import { type Candidate, jevPick, route } from "@/lib/router";
 
@@ -41,7 +44,7 @@ export async function POST(req: Request) {
       writer.write({ type: "start" });
       const result = await route(
         question,
-        { rewrite, candidates: seedCandidates, pick: jevPick },
+        { rewrite, candidates, pick: jevPick },
         hint,
       );
 
@@ -57,7 +60,7 @@ export async function POST(req: Request) {
         return;
       }
 
-      const ficha = await loadFicha(result.id);
+      const ficha = await loadOrFetchFicha(result.id);
       if (!ficha) {
         writer.write({ type: "data-none", data: { query: question } });
         return;
