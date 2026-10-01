@@ -35,6 +35,15 @@ async function candidates(
   }));
 }
 
+/** The ficha the user was last shown, so follow-ups like "¿y si soy menor?" stay on topic. */
+function previousFicha(messages: PeruMessage[]): string | undefined {
+  for (const m of [...messages].reverse()) {
+    const part = m.parts.find((p) => p.type === "data-ficha");
+    if (part?.type === "data-ficha") return part.data.title;
+  }
+  return undefined;
+}
+
 function lastUserText(messages: PeruMessage[]): string {
   const last = messages.findLast((m) => m.role === "user");
   return (
@@ -67,8 +76,12 @@ export async function POST(req: Request) {
         });
         return;
       }
+      const topic = previousFicha(messages);
+      const routed = topic
+        ? `Contexto: la persona venía consultando "${topic}". Ahora pregunta: ${question}`
+        : question;
       const result = await route(
-        question,
+        routed,
         { rewrite, candidates, pick: jevPick },
         hint,
       );
