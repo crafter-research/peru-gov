@@ -6,6 +6,8 @@ import {
   streamText,
   toUIMessageStream,
 } from "ai";
+import { after } from "next/server";
+import { logRouteEvent, type RouteEvent } from "@/lib/analytics";
 import { allFichas, loadOrFetchFicha } from "@/lib/fichas";
 import type { ChatBody, PeruMessage } from "@/lib/messages";
 import { needsDistrict } from "@/lib/municipal";
@@ -59,21 +61,43 @@ function lastUserText(messages: PeruMessage[]): string {
 }
 
 export async function POST(req: Request) {
-  const { messages, hint }: { messages: PeruMessage[] } & ChatBody =
+  const {
+    messages,
+    hint,
+    sessionId,
+  }: { messages: PeruMessage[]; sessionId?: string } & ChatBody =
     await req.json();
+  const started = Date.now();
   const question = lastUserText(messages).slice(0, 500);
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "local";
   const allowed = limiter(ip);
+  const event: RouteEvent = {
+    sessionId: sessionId ?? "anon",
+    turn: messages.filter((m) => m.role === "user").length,
+    question,
+    hintId: hint,
+    kind: "error",
+    ip,
+  };
+  after(() =>
+    logRouteEvent({
+      ...event,
+      latencyMs: event.latencyMs ?? Date.now() - started,
+    }),
+  );
 
   const stream = createUIMessageStream<PeruMessage>({
     onError: (error) => {
       console.error("chat route failed", error);
+      event.kind = "error";
+      event.error = error instanceof Error ? error.message : String(error);
       return "No pude responder. Intenta de nuevo.";
     },
     execute: async ({ writer }) => {
       writer.write({ type: "start" });
       if (!allowed.ok) {
+        event.kind = "limited";
         writer.write({
           type: "data-limited",
           data: { retryAfterSeconds: allowed.retryAfterSeconds },
@@ -81,13 +105,17 @@ export async function POST(req: Request) {
         return;
       }
       const topic = previousFicha(messages);
+      event.topicId = topic?.id;
       const withVariants = async (q: string, rewrites: string[]) => {
+        event.rewrites = rewrites;
         const found = await candidates(q, rewrites);
+        event.candidates = found;
         if (!topic) return found;
         const extra = (await variantCandidates(topic.id)).filter(
           (v) => !found.some((f) => f.id === v.id),
         );
-        return [...extra, ...found].slice(0, 30);
+        event.candidates = [...extra, ...found].slice(0, 30);
+        return event.candidates;
       };
       const routed = topic
         ? `Contexto: la persona venía consultando "${topic.title}". Ahora pregunta: ${question}`
@@ -98,6 +126,7 @@ export async function POST(req: Request) {
         hint,
       );
 
+      event.kind = result.kind;
       if (result.kind === "none") {
         writer.write({ type: "data-none", data: { query: question } });
         return;
@@ -112,6 +141,7 @@ export async function POST(req: Request) {
 
       const ficha = await loadOrFetchFicha(result.id);
       if (!ficha) {
+        event.kind = "none";
         writer.write({ type: "data-none", data: { query: question } });
         return;
       }
@@ -120,6 +150,8 @@ export async function POST(req: Request) {
         data: { steps: await pathFor(ficha) },
       });
       writer.write({ type: "data-ficha", data: ficha });
+      event.ficha = { id: ficha.id, title: ficha.title, entity: ficha.entity };
+      event.latencyMs = Date.now() - started;
       const userText = messages
         .filter((m) => m.role === "user")
         .flatMap((m) =>
@@ -127,7 +159,10 @@ export async function POST(req: Request) {
         )
         .join(" ");
       const place = needsDistrict(ficha.entity, userText);
-      if (place) writer.write({ type: "data-district", data: { place } });
+      if (place) {
+        event.district = place;
+        writer.write({ type: "data-district", data: { place } });
+      }
       const { variants, related } = await variantsAndRelated(ficha);
       if (variants.length)
         writer.write({ type: "data-variants", data: { items: variants } });
