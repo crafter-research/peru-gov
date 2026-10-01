@@ -15,11 +15,13 @@
     "corpus:embed": "env -u AI_GATEWAY_API_KEY bun --env-file=.env.local scripts/embed-catalog.ts",
     "corpus:tree": "bun scripts/build-tree.ts",
     "eval": "env -u AI_GATEWAY_API_KEY bun --env-file=.env.local scripts/eval.ts",
-    "dataset": "bun scripts/dataset.ts"
+    "dataset": "bun scripts/dataset.ts",
+    "db:migrate": "env -u DATABASE_URL bun --env-file=.env.local scripts/db-migrate.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^4.0.100",
     "@ai-sdk/react": "^4.0.125",
+    "@neondatabase/serverless": "^1.1.0",
     "ai": "^7.0.122",
     "next": "16.3.6",
     "react": "19.2.8",
